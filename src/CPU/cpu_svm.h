@@ -1,12 +1,16 @@
-#ifndef CPU_SVM_HEADER
-#define	CPU_SVM_HEADER
+#ifndef PEGASOS_CPU_SVM_HEADER
+#define	PEGASOS_CPU_SVM_HEADER
 
 #include "../shared/svm.h"
-//#include <blas.h>
+#include <cstdlib>
+#include <vector>
 
 namespace pegasos{
     template<typename T>
     class cpuSVM : public SVM<T>{
+        private:
+            std::vector<int> getBatch(int batchSize, int numElements);
+        
         protected:
             int dataDimension;
             float eta;

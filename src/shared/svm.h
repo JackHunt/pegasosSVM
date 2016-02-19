@@ -2,6 +2,7 @@
 #define	SVM_HEADER
 
 #include <cmath>
+#include "general.h"
 
 namespace pegasos{
     template<typename T>
