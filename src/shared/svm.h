@@ -3,13 +3,14 @@
 
 #include <cmath>
 #include "general.h"
+#include "training.h"
 
 namespace pegasos{
     template<typename T>
     class SVM{
     protected:
         int dataDimension;
-        T eta;
+        T eta, lambda;
         T *weights;
     
     public:

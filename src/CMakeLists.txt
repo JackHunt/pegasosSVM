@@ -1,6 +1,7 @@
 set(PEGASOS_SHARED_HEADERS
   shared/svm.h
   shared/general.h
+  shared/training.h
 )
 
 set(PEGASOS_CPU_FILES
@@ -12,6 +13,7 @@ set(PEGASOS_GPU_FILES
   CUDA/cuda_svm.h
   CUDA/cuda_svm.cu
   shared/general_impl.cu
+  shared/training_impl.cu
 )
 
 if(WITH_CUDA)

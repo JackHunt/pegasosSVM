@@ -3,10 +3,10 @@
 using namespace pegasos;
 
 //------------------------------------------------------------------------------
-//Public Constructor and Destructor.
+//Public members.
 //------------------------------------------------------------------------------
 template<typename T>
-cpuSVM<T>::cpuSVM(int D, T lambda) : dataDimension(D){
+cpuSVM<T>::cpuSVM(int D, T lambda) : dataDimension(D), lambda(lambda){
     this->weights = new T[D];
     for(int i=0; i<D; i++){
         this->weights[i] = (T)0.0;
@@ -20,14 +20,19 @@ cpuSVM<T>::~cpuSVM(){
     delete[] weights;
 }
 
-//------------------------------------------------------------------------------
-//Public members.
-//------------------------------------------------------------------------------
 template<typename T>
-void cpuSVM<T>::train(T* data, int *labels, int instances, int batchSize){
-    std::vector<int> batchIndices = getBatch(batchSize, instances);
+void cpuSVM<T>::train(T *data, int *labels, int instances, int batchSize){
+    std::vector<int> batch = getBatch(batchSize, instances);
     
-    //Do OpenMP parallel reduction.
+    T *batchSum = (T)0.0;
+    #if defined(_OPENMP)
+        #pragma omp parallel reduction(+:batchSum)
+    #endif
+    for(std::vector<int>::iterator i = batch.begin(); i != batch.end(); ++i){
+        T inner = innerProduct(weights, data[i]);//CHECK THIS INDEX
+        batchSum += (labels[*i]*inner < 1) ? labels[*i]*data[*i] : T(0.0);
+    }
+    weightUpdate(weights, eta, lambda, batchSize, batchSum, dataDimension);
 }
 
 template<typename T>
@@ -46,15 +51,19 @@ void cpuSVM<T>::predict(T* data, T* result, int instances){
 template<typename T>
 std::vector<int> cpuSVM<T>::getBatch(int batchSize, int numElements){
     if(batchSize < numElements){
-        std::vector<int> batchIndices;
+        std::vector<int> batchIndices(batchSize);
+        #if defined(_OPENMP)
+            #pragma omp parallel for
+        #endif
         for(int i=0; i<batchSize; i++){
-            batchIndices.push_back((rand() % batchSize));
+            batchIndices[i] = ((rand() % batchSize));
         }
         return batchIndices;
     }else{
         std::vector<int> batchIndices(numElements);
-        
-        #pragma omp parallel for
+        #if defined(_OPENMP)
+            #pragma omp parallel for
+        #endif
         for(int i=0; i<numElements; i++){
             batchIndices[i] = i;
         }

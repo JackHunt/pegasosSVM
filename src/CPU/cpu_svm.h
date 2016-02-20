@@ -13,7 +13,7 @@ namespace pegasos{
         
         protected:
             int dataDimension;
-            float eta;
+            T eta, lambda;
             T *weights;
         
         public:
