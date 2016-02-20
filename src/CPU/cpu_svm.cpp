@@ -29,7 +29,7 @@ void cpuSVM<T>::train(T *data, int *labels, int instances, int batchSize){
         #pragma omp parallel reduction(+:batchSum)
     #endif
     for(std::vector<int>::iterator i = batch.begin(); i != batch.end(); ++i){
-        T inner = innerProduct(weights, data[i]);//CHECK THIS INDEX
+        T inner = innerProduct(weights, data[*i]);
         batchSum += (labels[*i]*inner < 1) ? labels[*i]*data[*i] : T(0.0);
     }
     weightUpdate(weights, eta, lambda, batchSize, batchSum, dataDimension);
