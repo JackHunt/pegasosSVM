@@ -4,7 +4,7 @@
 #include <cuda_runtime.h>
 
 #define CUDA_BLOCK_DIM 16
-#define cudaCheck(ans){cudaAssert((ans), __FILE__, __LINE__);}
+#define CUDA_CHECK(ans){cudaAssert((ans), __FILE__, __LINE__);}
 
 inline void cudaAssert(cudaError_t code, const char *file, int line){
    if(code != cudaSuccess){
