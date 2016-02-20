@@ -8,10 +8,8 @@
 namespace pegasos{
     template<typename T>
     class cpuSVM : public SVM<T>{
-        private:
-            std::vector<int> getBatch(int batchSize, int numElements);
-        
         protected:
+            std::vector<int> getBatch(int batchSize, int numElements);
             int dataDimension;
             T eta, lambda;
             T *weights;
@@ -20,10 +18,9 @@ namespace pegasos{
             cpuSVM(int D, T lambda);
             ~cpuSVM();
             void train(T *data, int *labels, int instances, int batchSize);
-            T predict(T data);
+            T predict(T *data);
             void predict(T *data, T *result, int instances);
     };
 }
-
 #endif
 

@@ -1,5 +1,5 @@
 #TO-DO: Check actually required version.
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
 project(pegasosSVM)
 
 #Set compiler flags for Windows and Unix, respectively.
@@ -29,5 +29,29 @@ if(USE_OpenMP)
   ENDIF()
 endif()
 
-#Add project directories.
-add_subdirectory(src)
+#Add project sources
+set(PEGASOS_SHARED_HEADERS
+  src/shared/shared.h
+  src/shared/svm.h
+  src/shared/general.h
+  src/shared/training.h
+)
+
+set(PEGASOS_CPU_FILES
+  src/CPU/cpu_svm.h
+  src/CPU/cpu_svm.cpp
+)
+
+set(PEGASOS_GPU_FILES
+  src/CUDA/cuda_svm.h
+  src/CUDA/cuda_svm.cu
+)
+
+#Build libs.
+if(WITH_CUDA)
+  cuda_add_library(SVM SHARED ${PEGASOS_SHARED_HEADERS} 
+    ${PEGASOS_CPU_FILES} ${PEGASOS_GPU_FILES})
+else(WITH_CUDA)
+  add_definitions(-DCOMPILE_WITHOUT_CUDA)
+  add_library(SVM SHARED ${PEGASOS_SHARED_HEADERS} ${PEGASOS_CPU_FILES})
+endif(WITH_CUDA)
