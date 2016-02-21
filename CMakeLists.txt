@@ -43,8 +43,8 @@ set(PEGASOS_CPU_FILES
 )
 
 set(PEGASOS_GPU_FILES
-  src/CUDA/cuda_svm.h
-  src/CUDA/cuda_svm.cu
+  src/CUDA/gpu_svm.h
+  src/CUDA/gpu_svm.cu
 )
 
 #Build libs.
