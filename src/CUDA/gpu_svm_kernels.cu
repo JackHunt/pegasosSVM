@@ -4,12 +4,12 @@ All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright
+ * Redistributions of source code must retain the above copyright
       notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
+ * Redistributions in binary form must reproduce the above copyright
       notice, this list of conditions and the following disclaimer in the
       documentation and/or other materials provided with the distribution.
-    * Neither the name of Jack Miles Hunt nor the
+ * Neither the name of Jack Miles Hunt nor the
       names of contributors may be used to endorse or promote products
       derived from this software without specific prior written permission.
 
@@ -27,21 +27,34 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "gpu_svm_kernels.h"
 
-template<typename T>
-__global__
-void batchPredict_kernel(T *weight, T *data, T *result, int instances, int dim){
-    int idx = blockIdx.x*blockDim.x + threadIdx.x;
-    if(idx < 0 || idx > instances){
-        return;
+struct dotFunctor {
+
+    template<typename T>
+    __SHARED_CODE__
+    void operator(T *dot, int *labels, int length) {
+        dotToIndicator(dot, labels, length);
     }
-    result[idx] = innerProduct(weight, data[idx*dim], dim);
-}
+};
+
+struct updateFunctor {
+
+    template<typename T>
+    __SHARED_CODE__
+    void operator(T *weight, T *batchSum T c1, T c2) {
+        int idx = getIdx();
+        weightUpdateIndividual(weight, batchSum, c1, c2, idx);
+    }
+};
 
 template<typename T>
-__global__
-void batchLearn_kernel(T *weight, T *data, T *result, int *labels, int batchSize, T eta, T lambda){
-    int idx = blockIdx.x*blockDim.x + threadIdx.x;
-    if(idx < 0 || idx > batchSize){
-        return;
-    }
+__device__
+void dotToIndicator(T *dot, int *labels, int length) {
+    int idx = getIdx();
+    if (idx < 0 || idx > length) return;
+
+    dot[idx] = (dot[idx] < (T) 1.0) ? (T) labels[idx] : (T) 0.0;
+}
+
+__device__ int getIdx() {
+    return blockIdx.x * blockDim.x + threadIdx.x;
 }

@@ -4,12 +4,12 @@ All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright
+ * Redistributions of source code must retain the above copyright
       notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
+ * Redistributions in binary form must reproduce the above copyright
       notice, this list of conditions and the following disclaimer in the
       documentation and/or other materials provided with the distribution.
-    * Neither the name of Jack Miles Hunt nor the
+ * Neither the name of Jack Miles Hunt nor the
       names of contributors may be used to endorse or promote products
       derived from this software without specific prior written permission.
 
@@ -30,15 +30,22 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cuda_runtime.h>
 
-#define CUDA_BLOCK_DIM 16
+#define CUDA_BLOCK_DIM 256
 #define CUDA_CHECK(ans){cudaAssert((ans), __FILE__, __LINE__);}
+#define CUBLAS_CHECK(ans){cublasAssert((ans), __FILE__, __LINE__);}
 
-inline void cudaAssert(cudaError_t code, const char *file, int line){
-   if(code != cudaSuccess){
-      fprintf(stderr,"CUDA Error: %s %s %d\n", cudaGetErrorString(code), file, line);
-      exit(code);
-   }
+inline void cudaAssert(cudaError_t code, const char *file, int line) {
+    if (code != cudaSuccess) {
+        fprintf(stderr, "CUDA Error: %s %s %d\n", cudaGetErrorString(code), file, line);
+        exit(code);
+    }
 }
 
+inline void cublasAssert(cublasStatus_t code, const char *file, int line) {
+    if (code != CUBLAS_STATUS_SUCCESS) {
+        fprintf(stderr, "CUBLAS Error! %s line: %d error code: %d\n", file, line, code);
+        exit(code);
+    }
+}
 #endif
 

@@ -4,12 +4,12 @@ All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright
+ * Redistributions of source code must retain the above copyright
       notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
+ * Redistributions in binary form must reproduce the above copyright
       notice, this list of conditions and the following disclaimer in the
       documentation and/or other materials provided with the distribution.
-    * Neither the name of Jack Miles Hunt nor the
+ * Neither the name of Jack Miles Hunt nor the
       names of contributors may be used to endorse or promote products
       derived from this software without specific prior written permission.
 
@@ -32,23 +32,33 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "cuda_util.h"
 #include "cuda.h"
 #include <cuda_runtime.h>
+#include "cublas_v2.h"
 #include <thrust/device_vector.h>
+#include <type_traits>
+#include <stdexcept>
 
-namespace pegasos{
+namespace pegasos {
+
     template<typename T>
-    class gpuSVM : public SVM<T>{
-        protected:
-            thrust::vector<int> getBatch(int batchSize, int numElements);
-            int dataDimension;
-            T eta, lambda;
-            T *weights;
-        
-        public:
-            gpuSVM(int D, T lambda);
-            ~gpuSVM();
-            void train(T *data, int *labels, int instances, int batchSize);
-            T predict(T *data);
-            void predict(T *data, T *result, int instances);
+    class gpuSVM : public SVM<T> {
+    private:
+        cublasHandle_t cublasHandle;
+        void cublasMatMult(cublasOperation_t transA, cublasOperation_t transB,
+                int M, int N, int K, float alpha, float *A, float *B,
+                float beta, float *C);
+
+    protected:
+        thrust::vector<int> getBatch(int batchSize, int numElements);
+        int dataDimension;
+        T eta, lambda;
+        T *weights;
+
+    public:
+        gpuSVM(int D, T lambda);
+        ~gpuSVM();
+        void train(T *data, int *labels, int instances, int batchSize);
+        T predict(T *data);
+        void predict(T *data, T *result, int instances);
     };
 }
 #endif

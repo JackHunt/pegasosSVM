@@ -4,12 +4,12 @@ All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright
+ * Redistributions of source code must retain the above copyright
       notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
+ * Redistributions in binary form must reproduce the above copyright
       notice, this list of conditions and the following disclaimer in the
       documentation and/or other materials provided with the distribution.
-    * Neither the name of Jack Miles Hunt nor the
+ * Neither the name of Jack Miles Hunt nor the
       names of contributors may be used to endorse or promote products
       derived from this software without specific prior written permission.
 
@@ -30,40 +30,74 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //------------------------------------------------------------------------------
 //Public members.
 //------------------------------------------------------------------------------
+
 template<typename T>
-gpuSVM<T>::gpuSVM(int D, T lambda) : dataDimension(D), lambda(lambda){
-    CUDA_CHECK(cudaMalloc((void**)&this->weights, D*sizeof(T)));
-    this->eta = (T)0.0;
+gpuSVM<T>::gpuSVM(int D, T lambda) : dataDimension(D), lambda(lambda) {
+    CUDA_CHECK(cudaMalloc((void**) & this->weights, D * sizeof (T)));
+    this->eta = (T) 0.0;
+    CUBLAS_CHECK(cublasCreate(&this->cb_handle));
 }
 
 template<typename T>
-gpuSVM::~gpuSVM(){
-    CUDA_CHECK(this->weights);
+gpuSVM::~gpuSVM() {
+    CUDA_CHECK(cudaFree(weights));
+    cublasDestroy(cublasHandle);
 }
 
 template<typename T>
-void gpuSVM<T>::train(T *data, int *labels, int instances, int batchSize){
-    //
+void gpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
+    T *dot, *reduced;
+    thrust::device_ptr<T> dotP = thrust::device_pointer_cast(dot);
+    thrust::device_ptr<T> reducedP = thrust::device_pointer_cast(reduced);
+    CUDA_CHECK(cudaMalloc((void**) &dot, instances * sizeof (T)));
+    CUDA_CHECK(cudaMalloc((void**) &reduced, dataDimension * sizeof (T)));
+    if (batchSize == instances) {
+        cublasMatMult(CUBLAS_OP_N, CUBLAS_OP_N, instances, 1, dataDimension,
+                (T) 1.0, data, weights, (T) 0.0, dot);
+        thrust::for_each(dotP, dotP + instances, dotFunctor(dot, labels, instances));
+        cublasMatMult(CUBLAS_OP_T, CUBLAS_OP_T, dataDimension, 1, instances,
+                (T) 1.0, data, dot, T()0.0, reduced);
+    } else {
+        throw std::invalid_argument("batchSize != instances not yet implemented!");
+    }
+    T c1 = (T) 1.0 - (eta * lambda);
+    T c2 = eta / (T) batchSize;
+    thrust::for_each(reducedP, reducedP + dataDimension, updateFunctor(weights, batchSum, c1, c2));
+    CUDA_CHECK(cudaFree(dots));
+    CUDA_CHECK(cudaFree(reduced))
 }
 
 template<typename T>
-T gpuSVM<T>::predict(T *data){
+T gpuSVM<T>::predict(T *data) {
     return innerProduct(weights, data);
 }
 
 template<typename T>
-void gpuSVM<T>::predict(T* data, T* result, int instances){
-    //
+void gpuSVM<T>::predict(T* data, T* result, int instances) {
+    cublasMatMult(CUBLAS_OP_N, CUBLAS_OP_N, instances, 1, dataDimension,
+            (T) 1.0, data, weights, (T) 0.0, result);
 }
 
 //------------------------------------------------------------------------------
-//Protected members.
+//Protected and Private members.
 //------------------------------------------------------------------------------
+
 template<typename T>
-thrust::vector<int> gpuSVM<T>::getBatch(int batchSize, int numElements){
-    if(batchSize < numElements){
-        //
-    }else{
-        //
+thrust::vector<int> gpuSVM<T>::getBatch(int batchSize, int numElements) {
+    throw std::invalid_argument("Mini batches not yet implemented.");
+}
+
+template<typename T>
+void cublasMatMult(cublasOperation_t transA, cublasOperation_t transB, int M,
+        int N, int K, float alpha, float *A, float *B, float beta, float *C) {
+    int lda = (transA == CUBLAS_OP_N) ? K : M;
+    int ldb = (transB == CUBLAS_OP_N) ? N : K;
+    int ldc = N;
+    if (std::is_same<T, float>::value) {
+        CUBLAS_CHECK(cublasSgemm(*cublasHandle, transB, transA, N, M, K, &alpha,
+                B, ldb, A, lda, &beta, C, ldc));
+    } else {
+        CUBLAS_CHECK(cublasDgemm(*cublasHandle, transB, transA, N, M, K, &alpha,
+                B, ldb, A, lda, &beta, C, ldc));
     }
 }

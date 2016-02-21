@@ -4,12 +4,12 @@ All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright
+ * Redistributions of source code must retain the above copyright
       notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
+ * Redistributions in binary form must reproduce the above copyright
       notice, this list of conditions and the following disclaimer in the
       documentation and/or other materials provided with the distribution.
-    * Neither the name of Jack Miles Hunt nor the
+ * Neither the name of Jack Miles Hunt nor the
       names of contributors may be used to endorse or promote products
       derived from this software without specific prior written permission.
 
@@ -32,32 +32,33 @@ using namespace pegasos;
 //------------------------------------------------------------------------------
 //Public members.
 //------------------------------------------------------------------------------
+
 template<typename T>
-cpuSVM<T>::cpuSVM(int D, T lambda) : dataDimension(D), lambda(lambda){
+cpuSVM<T>::cpuSVM(int D, T lambda) : dataDimension(D), lambda(lambda) {
     this->weights = new T[D];
-    for(int i=0; i<D; i++){
-        this->weights[i] = (T)0.0;
+    for (int i = 0; i < D; i++) {
+        this->weights[i] = (T) 0.0;
     }
-    this->eta = (T)0.0;
+    this->eta = (T) 0.0;
 }
 
 template<typename T>
-cpuSVM<T>::~cpuSVM(){
+cpuSVM<T>::~cpuSVM() {
     delete[] weights;
 }
 
 template<typename T>
-void cpuSVM<T>::train(T *data, int *labels, int instances, int batchSize){
+void cpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
     std::vector<int> batch = getBatch(batchSize, instances);
     DVector<T> *batchSum;
-    #if defined(_OPENMP)
-        #pragma omp parallel reduction(+:batchSum)
-    #endif
-    for(std::vector<int>::iterator i=batch.begin(); i!=batch.end(); ++i){
+#if defined(_OPENMP)
+#pragma omp parallel reduction(+:batchSum)
+#endif
+    for (std::vector<int>::iterator i = batch.begin(); i != batch.end(); ++i) {
         T inner = innerProduct(weights, data[*i]);
-        if(labels[*i]*inner < 1.0){
-            DVector<T> dataVec(dataDimension, data[*i*dataDimension]);
-            dataVec *= (T)labels[*i];
+        if (labels[*i] * inner < 1.0) {
+            DVector<T> dataVec(dataDimension, data[*i * dataDimension]);
+            dataVec *= (T) labels[*i];
             batchSum += dataVec;
         }
     }
@@ -65,40 +66,41 @@ void cpuSVM<T>::train(T *data, int *labels, int instances, int batchSize){
 }
 
 template<typename T>
-T cpuSVM<T>::predict(T *data){
+T cpuSVM<T>::predict(T *data) {
     return innerProduct(weights, data);
 }
 
 template<typename T>
-void cpuSVM<T>::predict(T* data, T* result, int instances){
-    #if defined(_OPENMP)
-        #pragma omp parallel for
-    #endif
-    for(int i=0; i<instances; i++){
-        result[i] = innerProduct(weights, data[i*dataDimension]);
+void cpuSVM<T>::predict(T* data, T* result, int instances) {
+#if defined(_OPENMP)
+#pragma omp parallel for
+#endif
+    for (int i = 0; i < instances; i++) {
+        result[i] = innerProduct(weights, data[i * dataDimension]);
     }
 }
 
 //------------------------------------------------------------------------------
 //Protected members.
 //------------------------------------------------------------------------------
+
 template<typename T>
-std::vector<int> cpuSVM<T>::getBatch(int batchSize, int numElements){
-    if(batchSize < numElements){
+std::vector<int> cpuSVM<T>::getBatch(int batchSize, int numElements) {
+    if (batchSize < numElements) {
         std::vector<int> batchIndices(batchSize);
-        #if defined(_OPENMP)
-            #pragma omp parallel for
-        #endif
-        for(int i=0; i<batchSize; i++){
+#if defined(_OPENMP)
+#pragma omp parallel for
+#endif
+        for (int i = 0; i < batchSize; i++) {
             batchIndices[i] = ((rand() % batchSize));
         }
         return batchIndices;
-    }else{
+    } else {
         std::vector<int> batchIndices(numElements);
-        #if defined(_OPENMP)
-            #pragma omp parallel for
-        #endif
-        for(int i=0; i<numElements; i++){
+#if defined(_OPENMP)
+#pragma omp parallel for
+#endif
+        for (int i = 0; i < numElements; i++) {
             batchIndices[i] = i;
         }
         return batchIndices;

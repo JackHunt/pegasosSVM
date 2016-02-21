@@ -4,12 +4,12 @@ All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright
+ * Redistributions of source code must retain the above copyright
       notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
+ * Redistributions in binary form must reproduce the above copyright
       notice, this list of conditions and the following disclaimer in the
       documentation and/or other materials provided with the distribution.
-    * Neither the name of Jack Miles Hunt nor the
+ * Neither the name of Jack Miles Hunt nor the
       names of contributors may be used to endorse or promote products
       derived from this software without specific prior written permission.
 
@@ -31,39 +31,40 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "shared.h"
 
 template<typename T>
-class DVector{
-    private:
-        T *data;
-        int dim;    
-    
-    public:
-    DVector(int dim, T *in_data = NULL) : dim(dim){
+class DVector {
+private:
+    T *data;
+    int dim;
+
+public:
+
+    DVector(int dim, T *in_data = NULL) : dim(dim) {
         data = new T[dim];
-        for(int i=0; i<dim; i++){
-            data[i] = (in_data == NULL) ? (T)0.0 : in_data[i];
+        for (int i = 0; i < dim; i++) {
+            data[i] = (in_data == NULL) ? (T) 0.0 : in_data[i];
         }
     }
-         
-    ~DVector(){
+
+    ~DVector() {
         delete[] data;
     }
-    
-    __SHARED_CODE__ 
-    T &operator [] (int idx){
+
+    __SHARED_CODE__
+    T &operator[](int idx) {
         return (idx >= dim) ? data[0] : data[idx];
     }
-    
+
     __SHARED_CODE__
-    friend DVector<T> &operator += (DVector<T> &lhs, const DVector<T> &rhs){
-        for(int i=0; i<lhs->dim; i++){
+            friend DVector<T> &operator+=(DVector<T> &lhs, const DVector<T> &rhs) {
+        for (int i = 0; i < lhs->dim; i++) {
             lhs[i] += rhs[i];
         }
         return lhs;
     }
-    
+
     __SHARED_CODE__
-    friend DVector<T> &operator *= (DVector<T> &lhs, const T &rhs){
-        for(int i=0; i<lhs->dim; i++){
+            friend DVector<T> &operator*=(DVector<T> &lhs, const T &rhs) {
+        for (int i = 0; i < lhs->dim; i++) {
             lhs[i] *= rhs;
         }
     }
@@ -71,9 +72,9 @@ class DVector{
 
 template<typename T>
 __SHARED_CODE__
-inline T innerProduct(T *A, T *B, int dim){
-    T tmp = (T)0.0;
-    for(int i=0; i<dim; i++){
+inline T innerProduct(T *A, T *B, int dim) {
+    T tmp = (T) 0.0;
+    for (int i = 0; i < dim; i++) {
         tmp += A[i] * B[i];
     }
     return tmp;
@@ -81,10 +82,10 @@ inline T innerProduct(T *A, T *B, int dim){
 
 template<typename T>
 __SHARED_CODE__
-inline void multiply(T *A, T *B, T *out, int dim){
-    T tmp = (T)0.0;
-    for(int i=0; i<dim; i++){
-        tmp = A[i]*B[i];
+inline void multiply(T *A, T *B, T *out, int dim) {
+    T tmp = (T) 0.0;
+    for (int i = 0; i < dim; i++) {
+        tmp = A[i] * B[i];
         out[i] = tmp;
     }
 }
