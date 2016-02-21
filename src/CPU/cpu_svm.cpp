@@ -53,11 +53,11 @@ void cpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
     DVector<T> batchSum;
 
     #pragma omp parallel for
-    for (std::vector<int>::iterator i = batch.begin(); i != batch.end(); ++i) {
-        T inner = innerProduct(weights, data[*i]);
-        if (labels[*i] * inner < 1.0) {
-            DVector<T> dataVec(dataDimension, data[*i * dataDimension]);
-            dataVec *= (T) labels[*i];
+    for (int i=0; i<batch.size(); i++) {
+        T inner = innerProduct(weights, data[batch[i]]);
+        if (labels[batch[i]] * inner < 1.0) {
+            DVector<T> dataVec(dataDimension, data[batch[i] * dataDimension]);
+            dataVec *= (T) labels[batch[i]];
             #pragma omp critical 
             {
                 batchSum += dataVec;
