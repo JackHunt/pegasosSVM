@@ -18,9 +18,9 @@ It should be noted that the CPU implementation is provided primarily for demonst
 and that highly optimised CPU SVM libraries are available.
 
 ### What expansions shall be made in the future?
-*Non binary classification
-*Regression
-*GPU Mini Batches(see below)
+* Non binary classification
+* Regression
+* GPU Mini Batches(see below)
 
 #### Mini Batches
 Mini batch support is built in to the CPU implementation, however it has proven to be 
