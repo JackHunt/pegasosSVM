@@ -50,16 +50,18 @@ cpuSVM<T>::~cpuSVM() {
 template<typename T>
 void cpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
     std::vector<int> batch = getBatch(batchSize, instances);
-    DVector<T> *batchSum;
-#if defined(_OPENMP)
-#pragma omp parallel
-#endif
+    DVector<T> batchSum;
+
+    #pragma omp parallel for
     for (std::vector<int>::iterator i = batch.begin(); i != batch.end(); ++i) {
         T inner = innerProduct(weights, data[*i]);
         if (labels[*i] * inner < 1.0) {
             DVector<T> dataVec(dataDimension, data[*i * dataDimension]);
             dataVec *= (T) labels[*i];
-            batchSum += dataVec;
+            #pragma omp critical 
+            {
+                batchSum += dataVec;
+            }
         }
     }
     weightUpdate(weights, eta, lambda, batchSize, batchSum, dataDimension);

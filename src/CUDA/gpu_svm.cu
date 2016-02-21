@@ -32,6 +32,7 @@ using namespace pegasos;
 //------------------------------------------------------------------------------
 //Public members.
 //------------------------------------------------------------------------------
+
 template<typename T>
 gpuSVM<T>::gpuSVM(int D, T lambda) : dataDimension(D), lambda(lambda) {
     CUDA_CHECK(cudaMalloc((void**) & this->weights, D * sizeof (T)));
@@ -57,7 +58,7 @@ void gpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
                 (T) 1.0, data, weights, (T) 0.0, dot);
         thrust::for_each(dotP, dotP + instances, dotFunctor(dot, labels, instances));
         cublasMatMult(CUBLAS_OP_T, CUBLAS_OP_T, dataDimension, 1, instances,
-                (T) 1.0, data, dot, (T)0.0, reduced);
+                (T) 1.0, data, dot, (T) 0.0, reduced);
     } else {
         throw std::invalid_argument("batchSize != instances not yet implemented!");
     }

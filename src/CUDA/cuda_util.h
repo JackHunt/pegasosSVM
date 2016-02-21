@@ -38,14 +38,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 inline void cudaAssert(cudaError_t code, const char *file, int line) {
     if (code != cudaSuccess) {
-		std::cerr << "CUDA ERROR: " << cudaGetErrorString(code) << " " << file << " " << line << std::endl;
+        std::cerr << "CUDA ERROR: " << cudaGetErrorString(code) << " " << file << " " << line << std::endl;
         exit(code);
     }
 }
 
 inline void cublasAssert(cublasStatus_t code, const char *file, int line) {
     if (code != CUBLAS_STATUS_SUCCESS) {
-		std::cerr << "CUBLAS ERROR: " << file << " Line: " << line << " Code: " << code << std::endl;
+        std::cerr << "CUBLAS ERROR: " << file << " Line: " << line << " Code: " << code << std::endl;
         exit(code);
     }
 }

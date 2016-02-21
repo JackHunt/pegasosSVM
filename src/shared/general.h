@@ -68,7 +68,7 @@ public:
         for (int i = 0; i < lhs->dim; i++) {
             lhs[i] *= rhs;
         }
-		return lhs;
+        return lhs;
     }
 };
 

@@ -39,6 +39,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "cuda_util.h"
 
 namespace pegasos {
+
     template<typename T>
     class gpuSVM : public SVM<T> {
     private:
@@ -56,7 +57,8 @@ namespace pegasos {
         gpuSVM(int D, T lambda);
         ~gpuSVM();
         void train(T *data, int *labels, int instances, int batchSize);
-        T predict(T *data);        void predict(T *data, T *result, int instances);
+        T predict(T *data);
+        void predict(T *data, T *result, int instances);
     };
 }
 #endif
