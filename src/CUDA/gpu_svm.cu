@@ -27,19 +27,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "gpu_svm.h"
 
+using namespace pegasos;
+
 //------------------------------------------------------------------------------
 //Public members.
 //------------------------------------------------------------------------------
-
 template<typename T>
 gpuSVM<T>::gpuSVM(int D, T lambda) : dataDimension(D), lambda(lambda) {
     CUDA_CHECK(cudaMalloc((void**) & this->weights, D * sizeof (T)));
     this->eta = (T) 0.0;
-    CUBLAS_CHECK(cublasCreate(&this->cb_handle));
+    CUBLAS_CHECK(cublasCreate(&this->cublasHandle));
 }
 
 template<typename T>
-gpuSVM::~gpuSVM() {
+gpuSVM<T>::~gpuSVM() {
     CUDA_CHECK(cudaFree(weights));
     cublasDestroy(cublasHandle);
 }
@@ -56,14 +57,14 @@ void gpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
                 (T) 1.0, data, weights, (T) 0.0, dot);
         thrust::for_each(dotP, dotP + instances, dotFunctor(dot, labels, instances));
         cublasMatMult(CUBLAS_OP_T, CUBLAS_OP_T, dataDimension, 1, instances,
-                (T) 1.0, data, dot, T()0.0, reduced);
+                (T) 1.0, data, dot, (T)0.0, reduced);
     } else {
         throw std::invalid_argument("batchSize != instances not yet implemented!");
     }
     T c1 = (T) 1.0 - (eta * lambda);
     T c2 = eta / (T) batchSize;
-    thrust::for_each(reducedP, reducedP + dataDimension, updateFunctor(weights, batchSum, c1, c2));
-    CUDA_CHECK(cudaFree(dots));
+    thrust::for_each(reducedP, reducedP + dataDimension, updateFunctor(weights, reduced, c1, c2));
+    CUDA_CHECK(cudaFree(dot));
     CUDA_CHECK(cudaFree(reduced))
 }
 
@@ -83,21 +84,21 @@ void gpuSVM<T>::predict(T* data, T* result, int instances) {
 //------------------------------------------------------------------------------
 
 template<typename T>
-thrust::vector<int> gpuSVM<T>::getBatch(int batchSize, int numElements) {
+thrust::device_vector<int> gpuSVM<T>::getBatch(int batchSize, int numElements) {
     throw std::invalid_argument("Mini batches not yet implemented.");
 }
 
 template<typename T>
-void cublasMatMult(cublasOperation_t transA, cublasOperation_t transB, int M,
-        int N, int K, float alpha, float *A, float *B, float beta, float *C) {
+void gpuSVM<T>::cublasMatMult(cublasOperation_t transA, cublasOperation_t transB, int M,
+        int N, int K, T alpha, T *A, T *B, T beta, T *C) {
     int lda = (transA == CUBLAS_OP_N) ? K : M;
     int ldb = (transB == CUBLAS_OP_N) ? N : K;
     int ldc = N;
     if (std::is_same<T, float>::value) {
-        CUBLAS_CHECK(cublasSgemm(*cublasHandle, transB, transA, N, M, K, &alpha,
+        CUBLAS_CHECK(cublasSgemm(cublasHandle, transB, transA, N, M, K, &alpha,
                 B, ldb, A, lda, &beta, C, ldc));
     } else {
-        CUBLAS_CHECK(cublasDgemm(*cublasHandle, transB, transA, N, M, K, &alpha,
+        CUBLAS_CHECK(cublasDgemm(cublasHandle, transB, transA, N, M, K, &alpha,
                 B, ldb, A, lda, &beta, C, ldc));
     }
 }

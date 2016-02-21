@@ -29,6 +29,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define	SVM_CUDA_UTIL_HEADER
 
 #include <cuda_runtime.h>
+#include "cublas_v2.h"
+#include <iostream>
 
 #define CUDA_BLOCK_DIM 256
 #define CUDA_CHECK(ans){cudaAssert((ans), __FILE__, __LINE__);}
@@ -36,14 +38,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 inline void cudaAssert(cudaError_t code, const char *file, int line) {
     if (code != cudaSuccess) {
-        fprintf(stderr, "CUDA Error: %s %s %d\n", cudaGetErrorString(code), file, line);
+		std::cerr << "CUDA ERROR: " << cudaGetErrorString(code) << " " << file << " " << line << std::endl;
         exit(code);
     }
 }
 
 inline void cublasAssert(cublasStatus_t code, const char *file, int line) {
     if (code != CUBLAS_STATUS_SUCCESS) {
-        fprintf(stderr, "CUBLAS Error! %s line: %d error code: %d\n", file, line, code);
+		std::cerr << "CUBLAS ERROR: " << file << " Line: " << line << " Code: " << code << std::endl;
         exit(code);
     }
 }

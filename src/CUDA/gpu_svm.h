@@ -28,8 +28,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef PEGASOS_GPU_SVM_HEADER
 #define	PEGASOS_GPU_SVM_HEADER
 
-#include "../shared/svm.h"
-#include "cuda_util.h"
 #include "cuda.h"
 #include <cuda_runtime.h>
 #include "cublas_v2.h"
@@ -37,18 +35,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <type_traits>
 #include <stdexcept>
 
-namespace pegasos {
+#include "../shared/svm.h"
+#include "cuda_util.h"
 
+namespace pegasos {
     template<typename T>
     class gpuSVM : public SVM<T> {
     private:
         cublasHandle_t cublasHandle;
         void cublasMatMult(cublasOperation_t transA, cublasOperation_t transB,
-                int M, int N, int K, float alpha, float *A, float *B,
-                float beta, float *C);
+                int M, int N, int K, T alpha, T *A, T *B, T beta, T *C);
 
     protected:
-        thrust::vector<int> getBatch(int batchSize, int numElements);
+        thrust::device_vector<int> getBatch(int batchSize, int numElements);
         int dataDimension;
         T eta, lambda;
         T *weights;
@@ -57,8 +56,7 @@ namespace pegasos {
         gpuSVM(int D, T lambda);
         ~gpuSVM();
         void train(T *data, int *labels, int instances, int batchSize);
-        T predict(T *data);
-        void predict(T *data, T *result, int instances);
+        T predict(T *data);        void predict(T *data, T *result, int instances);
     };
 }
 #endif

@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef GENERAL_SHARED_FUNCTIONS_HEADER
 #define	GENERAL_SHARED_FUNCTIONS_HEADER
 
+#include <cstddef>
 #include "shared.h"
 
 template<typename T>
@@ -67,6 +68,7 @@ public:
         for (int i = 0; i < lhs->dim; i++) {
             lhs[i] *= rhs;
         }
+		return lhs;
     }
 };
 

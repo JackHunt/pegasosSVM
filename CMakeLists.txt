@@ -49,6 +49,7 @@ set(PEGASOS_GPU_FILES
 
 #Build libs.
 if(WITH_CUDA)
+  list(APPEND CUDA_NVCC_FLAGS "-arch=sm_20; -std=c++11;-O2;-DVERBOSE")
   cuda_add_library(SVM SHARED ${PEGASOS_SHARED_HEADERS} 
     ${PEGASOS_CPU_FILES} ${PEGASOS_GPU_FILES})
 else(WITH_CUDA)

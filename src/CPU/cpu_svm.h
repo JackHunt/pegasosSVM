@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define	PEGASOS_CPU_SVM_HEADER
 
 #include "../shared/svm.h"
+#include <cmath>
 #include <cstdlib>
 #include <vector>
 

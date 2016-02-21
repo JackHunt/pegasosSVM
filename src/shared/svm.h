@@ -27,8 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef SVM_HEADER
 #define	SVM_HEADER
-
-#include <cmath>
 #include "general.h"
 #include "training.h"
 

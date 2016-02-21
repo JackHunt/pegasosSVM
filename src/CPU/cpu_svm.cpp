@@ -52,7 +52,7 @@ void cpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
     std::vector<int> batch = getBatch(batchSize, instances);
     DVector<T> *batchSum;
 #if defined(_OPENMP)
-#pragma omp parallel reduction(+:batchSum)
+#pragma omp parallel
 #endif
     for (std::vector<int>::iterator i = batch.begin(); i != batch.end(); ++i) {
         T inner = innerProduct(weights, data[*i]);
