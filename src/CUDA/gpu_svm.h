@@ -32,7 +32,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cuda_runtime.h>
 #include "cublas_v2.h"
 #include <thrust/device_vector.h>
-#include <type_traits>
 #include <stdexcept>
 
 #include "../shared/svm.h"
@@ -45,7 +44,9 @@ namespace pegasos {
     private:
         cublasHandle_t cublasHandle;
         void cublasMatMult(cublasOperation_t transA, cublasOperation_t transB,
-                int M, int N, int K, T alpha, T *A, T *B, T beta, T *C);
+                int M, int N, int K, float alpha, float *A, float *B, float beta, float *C);
+        void cublasMatMult(cublasOperation_t transA, cublasOperation_t transB,
+                int M, int N, int K, double alpha, double *A, double *B, double beta, double *C);
 
     protected:
         thrust::device_vector<int> getBatch(int batchSize, int numElements);

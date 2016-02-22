@@ -91,15 +91,20 @@ thrust::device_vector<int> gpuSVM<T>::getBatch(int batchSize, int numElements) {
 
 template<typename T>
 void gpuSVM<T>::cublasMatMult(cublasOperation_t transA, cublasOperation_t transB, int M,
-        int N, int K, T alpha, T *A, T *B, T beta, T *C) {
+        int N, int K, float alpha, float *A, float *B, float beta, float *C) {
     int lda = (transA == CUBLAS_OP_N) ? K : M;
     int ldb = (transB == CUBLAS_OP_N) ? N : K;
     int ldc = N;
-    if (std::is_same<T, float>::value) {
-        CUBLAS_CHECK(cublasSgemm(cublasHandle, transB, transA, N, M, K, &alpha,
+    CUBLAS_CHECK(cublasSgemm(cublasHandle, transB, transA, N, M, K, &alpha,
                 B, ldb, A, lda, &beta, C, ldc));
-    } else {
-        CUBLAS_CHECK(cublasDgemm(cublasHandle, transB, transA, N, M, K, &alpha,
+}
+
+template<typename T>
+void gpuSVM<T>::cublasMatMult(cublasOperation_t transA, cublasOperation_t transB, int M,
+        int N, int K, double alpha, double *A, double *B, double beta, double *C) {
+    int lda = (transA == CUBLAS_OP_N) ? K : M;
+    int ldb = (transB == CUBLAS_OP_N) ? N : K;
+    int ldc = N;
+    CUBLAS_CHECK(cublasDgemm(cublasHandle, transB, transA, N, M, K, &alpha,
                 B, ldb, A, lda, &beta, C, ldc));
-    }
 }
