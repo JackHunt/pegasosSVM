@@ -62,8 +62,9 @@ template<typename T>
 void cpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
     std::vector<int> batch = getBatch(batchSize, instances);
     DVector<T> batchSum;
-
+    #if defined(_OPENMP)
     #pragma omp parallel for
+    #endif
     for (int i=0; i<batch.size(); i++) {
         T inner = innerProduct(weights, data[batch[i]]);
         if (labels[batch[i]] * inner < 1.0) {
@@ -109,18 +110,18 @@ template<typename T>
 std::vector<int> cpuSVM<T>::getBatch(int batchSize, int numElements) {
     if (batchSize < numElements) {
         std::vector<int> batchIndices(batchSize);
-#if defined(_OPENMP)
-#pragma omp parallel for
-#endif
+    #if defined(_OPENMP)
+    #pragma omp parallel for
+    #endif
         for (int i = 0; i < batchSize; i++) {
             batchIndices[i] = ((rand() % batchSize));
         }
         return batchIndices;
     } else {
         std::vector<int> batchIndices(numElements);
-#if defined(_OPENMP)
-#pragma omp parallel for
-#endif
+    #if defined(_OPENMP)
+    #pragma omp parallel for
+    #endif
         for (int i = 0; i < numElements; i++) {
             batchIndices[i] = i;
         }
