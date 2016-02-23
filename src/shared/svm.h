@@ -32,6 +32,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace pegasos {
 
+    /*
+     * Base class, derived to form cpuSVM and gpuSVM.
+     */
     template<typename T>
     class SVM {
     protected:

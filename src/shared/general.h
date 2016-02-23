@@ -31,6 +31,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cstddef>
 #include "shared.h"
 
+/*
+ * Simple vector structure to facilitate CPU reduction.
+ */
 template<typename T>
 class DVector {
 private:
@@ -50,12 +53,10 @@ public:
         delete[] data;
     }
 
-    __SHARED_CODE__
     T &operator[](int idx) {
         return (idx >= dim) ? data[0] : data[idx];
     }
 
-    __SHARED_CODE__
             friend DVector<T> &operator+=(DVector<T> &lhs, const DVector<T> &rhs) {
         for (int i = 0; i < lhs->dim; i++) {
             lhs[i] += rhs[i];
@@ -63,7 +64,6 @@ public:
         return lhs;
     }
 
-    __SHARED_CODE__
             friend DVector<T> &operator*=(DVector<T> &lhs, const T &rhs) {
         for (int i = 0; i < lhs->dim; i++) {
             lhs[i] *= rhs;
@@ -72,6 +72,9 @@ public:
     }
 };
 
+/*
+ * Compute inner product of some vector in contiguous memory.
+ */
 template<typename T>
 __SHARED_CODE__
 inline T innerProduct(T *A, T *B, int dim) {
@@ -82,6 +85,10 @@ inline T innerProduct(T *A, T *B, int dim) {
     return tmp;
 }
 
+/*
+ * Multiply two vectors in contiguous memory locations.
+ * CURRENTLY UNUSED
+ */
 template<typename T>
 __SHARED_CODE__
 inline void multiply(T *A, T *B, T *out, int dim) {

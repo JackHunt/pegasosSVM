@@ -31,18 +31,27 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../shared/general.h"
 #include "../shared/training.h"
 
+/*
+ * See header comments.
+ */
 struct dotFunctor {
     template<typename T>
     __SHARED_CODE__
     void operator(T *dot, int *labels, int length);
 };
 
+/*
+ * See header comments.
+ */
 struct updateFunctor {
     template<typename T>
     __SHARED_CODE__
     void operator(T *weight, T *batchSum T c1, T c2);
 };
 
+/*
+ * See header comments.
+ */
 template<typename T>
 __device__
 void dotToIndicator(T *dot, int *labels, int length);

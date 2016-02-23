@@ -34,8 +34,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vector>
 
 namespace pegasos {
-
     template<typename T>
+    /*
+     * gpuSVM class, derived from SVM defined in shared/svm.h
+     */
     class cpuSVM : public SVM<T> {
     protected:
         std::vector<int> getBatch(int batchSize, int numElements);

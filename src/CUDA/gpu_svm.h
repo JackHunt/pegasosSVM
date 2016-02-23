@@ -37,6 +37,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../shared/svm.h"
 #include "cuda_util.h"
 
+/*
+ * gpuSVM class, derived from SVM defined in shared/svm.h
+ */
 namespace pegasos {
 
     template<typename T>

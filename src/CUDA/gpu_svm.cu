@@ -33,6 +33,10 @@ using namespace pegasos;
 //Public members.
 //------------------------------------------------------------------------------
 
+/*
+ * Initialise a gpuSVM with a given data dimension and initial lambda param.
+ * Initialises a cuBLAS context, also.
+ */
 template<typename T>
 gpuSVM<T>::gpuSVM(int D, T lambda) : dataDimension(D), lambda(lambda) {
     CUDA_CHECK(cudaMalloc((void**) & this->weights, D * sizeof (T)));
@@ -40,12 +44,21 @@ gpuSVM<T>::gpuSVM(int D, T lambda) : dataDimension(D), lambda(lambda) {
     CUBLAS_CHECK(cublasCreate(&this->cublasHandle));
 }
 
+/*
+ * Clean weight vector and destroy cuBLAS context.
+ */
 template<typename T>
 gpuSVM<T>::~gpuSVM() {
     CUDA_CHECK(cudaFree(weights));
     cublasDestroy(cublasHandle);
 }
 
+/*
+ * Perform a single iteration of GPU based Primal SVM training, 
+ * as per pegasos paper.
+ * Column wise reductions achieved by matrix multiplications, for efficiency.
+ * Currently, can only process a batch in contiguous memory.
+ */
 template<typename T>
 void gpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
     T *dot, *reduced;
@@ -69,11 +82,17 @@ void gpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
     CUDA_CHECK(cudaFree(reduced))
 }
 
+/*
+ * Return SVM output for a given data point.
+ */
 template<typename T>
 T gpuSVM<T>::predict(T *data) {
     return innerProduct(weights, data);
 }
 
+/*
+ * Assigns SVM outputs for a given batch of instances.
+ */
 template<typename T>
 void gpuSVM<T>::predict(T* data, T* result, int instances) {
     cublasMatMult(CUBLAS_OP_N, CUBLAS_OP_N, instances, 1, dataDimension,
@@ -84,11 +103,19 @@ void gpuSVM<T>::predict(T* data, T* result, int instances) {
 //Protected and Private members.
 //------------------------------------------------------------------------------
 
+/*
+ * CURRENTLY UNIMPLEMENTED.
+ * Will generate random mini batches. Currently prohibited by performance 
+ * limitations pertaining to uncoalesced read operations.
+ */
 template<typename T>
 thrust::device_vector<int> gpuSVM<T>::getBatch(int batchSize, int numElements) {
     throw std::invalid_argument("Mini batches not yet implemented.");
 }
 
+/*
+ * cuBLAS Matrix multiplication in the case of T=float
+ */
 template<typename T>
 void gpuSVM<T>::cublasMatMult(cublasOperation_t transA, cublasOperation_t transB, int M,
         int N, int K, float alpha, float *A, float *B, float beta, float *C) {
@@ -99,6 +126,9 @@ void gpuSVM<T>::cublasMatMult(cublasOperation_t transA, cublasOperation_t transB
                 B, ldb, A, lda, &beta, C, ldc));
 }
 
+/*
+ * cuBLAS Matrix multiplication in the case of T=double
+ */
 template<typename T>
 void gpuSVM<T>::cublasMatMult(cublasOperation_t transA, cublasOperation_t transB, int M,
         int N, int K, double alpha, double *A, double *B, double beta, double *C) {

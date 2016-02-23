@@ -27,8 +27,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "gpu_svm_kernels.h"
 
+/*
+ * Functor to apply inidcator function to the results of the dot/inner product 
+ * operation, predicated on the value being <1 - see pegasos paper.
+ */
 struct dotFunctor {
-
     template<typename T>
     __SHARED_CODE__
     void operator(T *dot, int *labels, int length) {
@@ -36,8 +39,10 @@ struct dotFunctor {
     }
 };
 
+/*
+ * Functor to apply element wise weight update.
+ */
 struct updateFunctor {
-
     template<typename T>
     __SHARED_CODE__
     void operator(T *weight, T *batchSum T c1, T c2) {
@@ -46,6 +51,9 @@ struct updateFunctor {
     }
 };
 
+/*
+ * Dot/Inner product functor predicate function.
+ */
 template<typename T>
 __device__
 void dotToIndicator(T *dot, int *labels, int length) {
@@ -55,6 +63,10 @@ void dotToIndicator(T *dot, int *labels, int length) {
     dot[idx] = (dot[idx] < (T) 1.0) ? (T) labels[idx] : (T) 0.0;
 }
 
+/*
+ * Utility function, yields current threads index w.r.t the memory range that 
+ * the currently executing grid is operating on.
+ */
 __device__ int getIdx() {
     return blockIdx.x * blockDim.x + threadIdx.x;
 }

@@ -33,6 +33,9 @@ using namespace pegasos;
 //Public members.
 //------------------------------------------------------------------------------
 
+/*
+ * See comments in src/CUDA/gpu_svm.h
+ */
 template<typename T>
 cpuSVM<T>::cpuSVM(int D, T lambda) : dataDimension(D), lambda(lambda) {
     this->weights = new T[D];
@@ -41,12 +44,20 @@ cpuSVM<T>::cpuSVM(int D, T lambda) : dataDimension(D), lambda(lambda) {
     }
     this->eta = (T) 0.0;
 }
-
+/*
+ * Clear weight vector.
+ */
 template<typename T>
 cpuSVM<T>::~cpuSVM() {
     delete[] weights;
 }
 
+/*
+ * Perform a single training iteration. Parallelised with OpenMP. Direct 
+ * translation of algorithm presented in pegasos paper.
+ * TO-DO: Optimise parallelism, at present, critical section enforces serial 
+ * execution.
+ */
 template<typename T>
 void cpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
     std::vector<int> batch = getBatch(batchSize, instances);
@@ -67,11 +78,17 @@ void cpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
     weightUpdate(weights, eta, lambda, batchSize, batchSum, dataDimension);
 }
 
+/*
+ * See comment in src/CUDA/gpu_svm.h
+ */
 template<typename T>
 T cpuSVM<T>::predict(T *data) {
     return innerProduct(weights, data);
 }
 
+/*
+ * See comment in src/CUDA/gpu_svm.h
+ */
 template<typename T>
 void cpuSVM<T>::predict(T* data, T* result, int instances) {
 #if defined(_OPENMP)
@@ -85,7 +102,9 @@ void cpuSVM<T>::predict(T* data, T* result, int instances) {
 //------------------------------------------------------------------------------
 //Protected members.
 //------------------------------------------------------------------------------
-
+/*
+ * Returns a random batch of size batchSize, w.r.t the input dataset.
+ */
 template<typename T>
 std::vector<int> cpuSVM<T>::getBatch(int batchSize, int numElements) {
     if (batchSize < numElements) {

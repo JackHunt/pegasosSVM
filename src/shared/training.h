@@ -30,18 +30,29 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "shared.h"
 
+/*
+ * Computes step size, as per pegasos paper.
+ */
 template<typename T>
 __SHARED_CODE__
 inline T computeEta(T *lambda, int t) {
     return (T) (1.0 / (lambda * (T) t));
 }
 
+/*
+ * Applies weight update to a single element of a given weight vector, taking
+ * lambda and eta as parameters.
+ * TO-DO: change c1 and c2 to be more descriptive.
+ */
 template<typename T>
 __SHARED_CODE__
 inline void weightUpdateIndividual(T *weight, T *batchSum, T c1, T c2, int idx) {
     weight[idx] = c1 * weight[idx] + c2 * batchSum[idx];
 }
 
+/*
+ * Performs a weight update for a given vector.
+ */
 template<typename T>
 __SHARED_CODE__
 inline void weightUpdate(T *weights, T eta, T lambda, int batchSize, T *batchSum, int D) {
