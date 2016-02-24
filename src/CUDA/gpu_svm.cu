@@ -41,7 +41,7 @@ template<typename T>
 gpuSVM<T>::gpuSVM(int D, T lambda) : dataDimension(D), lambda(lambda) {
     CUDA_CHECK(cudaMalloc((void**) & this->weights, D * sizeof (T)));
     this->eta = (T) 0.0;
-    CUBLAS_CHECK(cublasCreate(&this->cublasHandle));
+    CUBLAS_CHECK(cublasCreate_v2(&this->cublasHandle));
 }
 
 /*
@@ -67,11 +67,11 @@ void gpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
     CUDA_CHECK(cudaMalloc((void**) &dot, instances * sizeof (T)));
     CUDA_CHECK(cudaMalloc((void**) &reduced, dataDimension * sizeof (T)));
     if (batchSize == instances) {
-        cublasMatMult(CUBLAS_OP_N, CUBLAS_OP_N, instances, 1, dataDimension,
-                (T) 1.0, data, weights, (T) 0.0, dot);
+        //cublasMatMult(CUBLAS_OP_N, CUBLAS_OP_N, instances, 1, dataDimension,
+          //      (T) 1.0, data, weights, (T) 0.0, dot);
         thrust::for_each(thrust::device, dotP, dotP + instances, dotFunctor<T>(dot, labels, instances));
-        cublasMatMult(CUBLAS_OP_T, CUBLAS_OP_T, dataDimension, 1, instances,
-                (T) 1.0, data, dot, (T) 0.0, reduced);
+        //cublasMatMult(CUBLAS_OP_T, CUBLAS_OP_T, dataDimension, 1, instances,
+         //       (T) 1.0, data, dot, (T) 0.0, reduced);
     } else {
         throw std::invalid_argument("batchSize != instances not yet implemented!");
     }
@@ -122,7 +122,7 @@ void gpuSVM<T>::cublasMatMult(cublasOperation_t transA, cublasOperation_t transB
     int lda = (transA == CUBLAS_OP_N) ? K : M;
     int ldb = (transB == CUBLAS_OP_N) ? N : K;
     int ldc = N;
-    CUBLAS_CHECK(cublasSgemm(cublasHandle, transB, transA, N, M, K, &alpha,
+    CUBLAS_CHECK(cublasSgemm_v2(cublasHandle, transB, transA, N, M, K, &alpha,
             B, ldb, A, lda, &beta, C, ldc));
 }
 
@@ -135,7 +135,7 @@ void gpuSVM<T>::cublasMatMult(cublasOperation_t transA, cublasOperation_t transB
     int lda = (transA == CUBLAS_OP_N) ? K : M;
     int ldb = (transB == CUBLAS_OP_N) ? N : K;
     int ldc = N;
-    CUBLAS_CHECK(cublasDgemm(cublasHandle, transB, transA, N, M, K, &alpha,
+    CUBLAS_CHECK(cublasDgemm_v2(cublasHandle, transB, transA, N, M, K, &alpha,
             B, ldb, A, lda, &beta, C, ldc));
 }
 
