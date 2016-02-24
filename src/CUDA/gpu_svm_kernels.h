@@ -32,30 +32,63 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../shared/training.h"
 
 /*
- * See header comments.
+ * Utility function, yields current threads index w.r.t the memory range that 
+ * the currently executing grid is operating on.
  */
-struct dotFunctor {
-    template<typename T>
-    __SHARED_CODE__
-    void operator(T *dot, int *labels, int length);
-};
+__SHARED_CODE__
+inline int getIdx() {
+    return blockIdx.x * blockDim.x + threadIdx.x;
+}
 
 /*
- * See header comments.
- */
-struct updateFunctor {
-    template<typename T>
-    __SHARED_CODE__
-    void operator(T *weight, T *batchSum T c1, T c2);
-};
-
-/*
- * See header comments.
+ * Dot/Inner product functor predicate function.
  */
 template<typename T>
 __device__
-void dotToIndicator(T *dot, int *labels, int length);
+inline void dotToIndicator(T *dot, int *labels, int length) {
+    int idx = getIdx();
+    if (idx < 0 || idx > length) return;
 
-__device__ int getIdx();
+    dot[idx] = (dot[idx] < (T) 1.0) ? (T) labels[idx] : (T) 0.0;
+}
+
+/*
+ * Functor to apply indicator function to the results of the dot/inner product 
+ * operation, predicated on the value being <1 - see pegasos paper.
+ */
+template<typename T>
+struct dotFunctor {
+    T *dot;
+    int *labels, length;
+
+    __SHARED_CODE__
+    dotFunctor(T *dot, int *labels, int length) :
+    dot(dot), labels(labels), length(length) {
+    }
+
+    __SHARED_CODE__
+    void operator()(T dummy) {
+        dotToIndicator(dot, labels, length);
+    }
+};
+
+/*
+ * Functor to apply element wise weight update.
+ */
+template<typename T>
+struct updateFunctor {
+    T *weight, *batchSum, c1, c2;
+
+    __SHARED_CODE__
+    updateFunctor(T *weight, T *batchSum, T c1, T c2) :
+    weight(weight), batchSum(batchSum), c1(c1), c2(c2) {
+    }
+
+    __SHARED_CODE__
+    void operator()(T dummy) {
+        int idx = getIdx();
+        weightUpdateIndividual(weight, batchSum, c1, c2, idx);
+    }
+};
 
 #endif

@@ -26,10 +26,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef PEGASOS_TOP_LEVEL_HEADER
-#define	PEGASOS_TOP_LEVEL_HEADER
+#define PEGASOS_TOP_LEVEL_HEADER
 
 #include "src/CPU/cpu_svm.h"
 #include "src/CUDA/gpu_svm.h"
 
-#endif	/* PEGASOS_H */
+#endif /* PEGASOS_H */
 

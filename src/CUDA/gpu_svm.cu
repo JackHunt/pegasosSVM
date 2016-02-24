@@ -69,7 +69,7 @@ void gpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
     if (batchSize == instances) {
         cublasMatMult(CUBLAS_OP_N, CUBLAS_OP_N, instances, 1, dataDimension,
                 (T) 1.0, data, weights, (T) 0.0, dot);
-        thrust::for_each(dotP, dotP + instances, dotFunctor(dot, labels, instances));
+        thrust::for_each(thrust::device, dotP, dotP + instances, dotFunctor<T>(dot, labels, instances));
         cublasMatMult(CUBLAS_OP_T, CUBLAS_OP_T, dataDimension, 1, instances,
                 (T) 1.0, data, dot, (T) 0.0, reduced);
     } else {
@@ -77,7 +77,7 @@ void gpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
     }
     T c1 = (T) 1.0 - (eta * lambda);
     T c2 = eta / (T) batchSize;
-    thrust::for_each(reducedP, reducedP + dataDimension, updateFunctor(weights, reduced, c1, c2));
+    thrust::for_each(thrust::device, reducedP, reducedP + dataDimension, updateFunctor<T>(weights, reduced, c1, c2));
     CUDA_CHECK(cudaFree(dot));
     CUDA_CHECK(cudaFree(reduced))
 }
@@ -87,7 +87,7 @@ void gpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
  */
 template<typename T>
 T gpuSVM<T>::predict(T *data) {
-    return innerProduct(weights, data);
+    return innerProduct(weights, data, dataDimension);
 }
 
 /*
@@ -123,7 +123,7 @@ void gpuSVM<T>::cublasMatMult(cublasOperation_t transA, cublasOperation_t transB
     int ldb = (transB == CUBLAS_OP_N) ? N : K;
     int ldc = N;
     CUBLAS_CHECK(cublasSgemm(cublasHandle, transB, transA, N, M, K, &alpha,
-                B, ldb, A, lda, &beta, C, ldc));
+            B, ldb, A, lda, &beta, C, ldc));
 }
 
 /*
@@ -136,5 +136,8 @@ void gpuSVM<T>::cublasMatMult(cublasOperation_t transA, cublasOperation_t transB
     int ldb = (transB == CUBLAS_OP_N) ? N : K;
     int ldc = N;
     CUBLAS_CHECK(cublasDgemm(cublasHandle, transB, transA, N, M, K, &alpha,
-                B, ldb, A, lda, &beta, C, ldc));
+            B, ldb, A, lda, &beta, C, ldc));
 }
+
+template class gpuSVM<float>;
+template class gpuSVM<double>;

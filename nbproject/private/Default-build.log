@@ -1,0 +1,189 @@
+[ 50%] Building NVCC (Device) object CMakeFiles/SVM.dir/src/CUDA/./SVM_generated_gpu_svm.cu.o
+/home/jackhunt/GitRepos/pegasosSVM/src/CUDA/gpu_svm.cu(65): warning: variable "dot" is used before its value is set
+          detected during instantiation of "void pegasos::gpuSVM<T>::train(T *, int *, int, int) [with T=float]" 
+(142): here
+
+/home/jackhunt/GitRepos/pegasosSVM/src/CUDA/gpu_svm.cu(66): warning: variable "reduced" is used before its value is set
+          detected during instantiation of "void pegasos::gpuSVM<T>::train(T *, int *, int, int) [with T=float]" 
+(142): here
+
+/home/jackhunt/GitRepos/pegasosSVM/src/CUDA/gpu_svm.cu(65): warning: variable "dot" is used before its value is set
+          detected during instantiation of "void pegasos::gpuSVM<T>::train(T *, int *, int, int) [with T=double]" 
+(143): here
+
+/home/jackhunt/GitRepos/pegasosSVM/src/CUDA/gpu_svm.cu(66): warning: variable "reduced" is used before its value is set
+          detected during instantiation of "void pegasos::gpuSVM<T>::train(T *, int *, int, int) [with T=double]" 
+(143): here
+
+/home/jackhunt/GitRepos/pegasosSVM/src/CUDA/gpu_svm.cu(65): warning: variable "dot" is used before its value is set
+          detected during instantiation of "void pegasos::gpuSVM<T>::train(T *, int *, int, int) [with T=float]" 
+(142): here
+
+/home/jackhunt/GitRepos/pegasosSVM/src/CUDA/gpu_svm.cu(66): warning: variable "reduced" is used before its value is set
+          detected during instantiation of "void pegasos::gpuSVM<T>::train(T *, int *, int, int) [with T=float]" 
+(142): here
+
+/home/jackhunt/GitRepos/pegasosSVM/src/CUDA/gpu_svm.cu(65): warning: variable "dot" is used before its value is set
+          detected during instantiation of "void pegasos::gpuSVM<T>::train(T *, int *, int, int) [with T=double]" 
+(143): here
+
+/home/jackhunt/GitRepos/pegasosSVM/src/CUDA/gpu_svm.cu(66): warning: variable "reduced" is used before its value is set
+          detected during instantiation of "void pegasos::gpuSVM<T>::train(T *, int *, int, int) [with T=double]" 
+(143): here
+
+/home/jackhunt/GitRepos/pegasosSVM/src/CUDA/gpu_svm.cu: In member function ‘void pegasos::gpuSVM<T>::train(T*, int*, int, int) [with T = float]’:
+/home/jackhunt/GitRepos/pegasosSVM/src/CUDA/gpu_svm.cu:65:66: warning: ‘dot’ is used uninitialized in this function [-Wuninitialized]
+     thrust::device_ptr<T> dotP = thrust::device_pointer_cast(dot);
+                                                                  ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CUDA/gpu_svm.cu:64:4: note: ‘dot’ was declared here
+     T *dot, *reduced;
+    ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CUDA/gpu_svm.cu: In member function ‘void pegasos::gpuSVM<T>::train(T*, int*, int, int) [with T = double]’:
+/home/jackhunt/GitRepos/pegasosSVM/src/CUDA/gpu_svm.cu:65:66: warning: ‘dot’ is used uninitialized in this function [-Wuninitialized]
+     thrust::device_ptr<T> dotP = thrust::device_pointer_cast(dot);
+                                                                  ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CUDA/gpu_svm.cu:64:4: note: ‘dot’ was declared here
+     T *dot, *reduced;
+    ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CUDA/gpu_svm.cu: In member function ‘void pegasos::gpuSVM<T>::train(T*, int*, int, int) [with T = float]’:
+/home/jackhunt/GitRepos/pegasosSVM/src/CUDA/gpu_svm.cu:66:74: warning: ‘reduced’ is used uninitialized in this function [-Wuninitialized]
+     thrust::device_ptr<T> reducedP = thrust::device_pointer_cast(reduced);
+                                                                          ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CUDA/gpu_svm.cu:64:10: note: ‘reduced’ was declared here
+     T *dot, *reduced;
+          ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CUDA/gpu_svm.cu: In member function ‘void pegasos::gpuSVM<T>::train(T*, int*, int, int) [with T = double]’:
+/home/jackhunt/GitRepos/pegasosSVM/src/CUDA/gpu_svm.cu:66:74: warning: ‘reduced’ is used uninitialized in this function [-Wuninitialized]
+     thrust::device_ptr<T> reducedP = thrust::device_pointer_cast(reduced);
+                                                                          ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CUDA/gpu_svm.cu:64:10: note: ‘reduced’ was declared here
+     T *dot, *reduced;
+          ^
+[100%] Building CXX object CMakeFiles/SVM.dir/src/CPU/cpu_svm.cpp.o
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp: In instantiation of ‘void pegasos::cpuSVM<T>::train(T*, int*, int, int) [with T = float]’:
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:132:16:   required from here
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:69:55: error: no matching function for call to ‘innerProduct(float*&, float&)’
+         T inner = innerProduct(weights, data[batch[i]]);
+                                                       ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:69:55: note: candidate is:
+In file included from /home/jackhunt/GitRepos/pegasosSVM/src/CPU/../shared/svm.h:30:0,
+                 from /home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.h:31,
+                 from /home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:28:
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/../shared/general.h:83:10: note: template<class T> T innerProduct(T*, T*, int)
+ inline T innerProduct(T *A, T *B, int dim) {
+          ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/../shared/general.h:83:10: note:   template argument deduction/substitution failed:
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:69:55: note:   mismatched types ‘T*’ and ‘float’
+         T inner = innerProduct(weights, data[batch[i]]);
+                                                       ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:79:74: error: no matching function for call to ‘weightUpdate(float*&, float&, float&, int&, DVector<float>&, int&)’
+     weightUpdate(weights, eta, lambda, batchSize, batchSum, dataDimension);
+                                                                          ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:79:74: note: candidate is:
+In file included from /home/jackhunt/GitRepos/pegasosSVM/src/CPU/../shared/svm.h:31:0,
+                 from /home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.h:31,
+                 from /home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:28:
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/../shared/training.h:58:13: note: template<class T> void weightUpdate(T*, T, T, int, T*, int)
+ inline void weightUpdate(T *weights, T eta, T lambda, int batchSize, T *batchSum, int D) {
+             ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/../shared/training.h:58:13: note:   template argument deduction/substitution failed:
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:79:74: note:   mismatched types ‘T*’ and ‘DVector<float>’
+     weightUpdate(weights, eta, lambda, batchSize, batchSum, dataDimension);
+                                                                          ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp: In instantiation of ‘T pegasos::cpuSVM<T>::predict(T*) [with T = float]’:
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:132:16:   required from here
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:87:38: error: no matching function for call to ‘innerProduct(float*&, float*&)’
+     return innerProduct(weights, data);
+                                      ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:87:38: note: candidate is:
+In file included from /home/jackhunt/GitRepos/pegasosSVM/src/CPU/../shared/svm.h:30:0,
+                 from /home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.h:31,
+                 from /home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:28:
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/../shared/general.h:83:10: note: template<class T> T innerProduct(T*, T*, int)
+ inline T innerProduct(T *A, T *B, int dim) {
+          ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/../shared/general.h:83:10: note:   template argument deduction/substitution failed:
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:87:38: note:   candidate expects 3 arguments, 2 provided
+     return innerProduct(weights, data);
+                                      ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp: In instantiation of ‘void pegasos::cpuSVM<T>::predict(T*, T*, int) [with T = float]’:
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:132:16:   required from here
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:99:66: error: no matching function for call to ‘innerProduct(float*&, float&)’
+         result[i] = innerProduct(weights, data[i * dataDimension]);
+                                                                  ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:99:66: note: candidate is:
+In file included from /home/jackhunt/GitRepos/pegasosSVM/src/CPU/../shared/svm.h:30:0,
+                 from /home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.h:31,
+                 from /home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:28:
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/../shared/general.h:83:10: note: template<class T> T innerProduct(T*, T*, int)
+ inline T innerProduct(T *A, T *B, int dim) {
+          ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/../shared/general.h:83:10: note:   template argument deduction/substitution failed:
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:99:66: note:   mismatched types ‘T*’ and ‘float’
+         result[i] = innerProduct(weights, data[i * dataDimension]);
+                                                                  ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp: In instantiation of ‘void pegasos::cpuSVM<T>::train(T*, int*, int, int) [with T = double]’:
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:133:17:   required from here
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:69:55: error: no matching function for call to ‘innerProduct(double*&, double&)’
+         T inner = innerProduct(weights, data[batch[i]]);
+                                                       ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:69:55: note: candidate is:
+In file included from /home/jackhunt/GitRepos/pegasosSVM/src/CPU/../shared/svm.h:30:0,
+                 from /home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.h:31,
+                 from /home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:28:
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/../shared/general.h:83:10: note: template<class T> T innerProduct(T*, T*, int)
+ inline T innerProduct(T *A, T *B, int dim) {
+          ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/../shared/general.h:83:10: note:   template argument deduction/substitution failed:
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:69:55: note:   mismatched types ‘T*’ and ‘double’
+         T inner = innerProduct(weights, data[batch[i]]);
+                                                       ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:79:74: error: no matching function for call to ‘weightUpdate(double*&, double&, double&, int&, DVector<double>&, int&)’
+     weightUpdate(weights, eta, lambda, batchSize, batchSum, dataDimension);
+                                                                          ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:79:74: note: candidate is:
+In file included from /home/jackhunt/GitRepos/pegasosSVM/src/CPU/../shared/svm.h:31:0,
+                 from /home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.h:31,
+                 from /home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:28:
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/../shared/training.h:58:13: note: template<class T> void weightUpdate(T*, T, T, int, T*, int)
+ inline void weightUpdate(T *weights, T eta, T lambda, int batchSize, T *batchSum, int D) {
+             ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/../shared/training.h:58:13: note:   template argument deduction/substitution failed:
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:79:74: note:   mismatched types ‘T*’ and ‘DVector<double>’
+     weightUpdate(weights, eta, lambda, batchSize, batchSum, dataDimension);
+                                                                          ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp: In instantiation of ‘T pegasos::cpuSVM<T>::predict(T*) [with T = double]’:
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:133:17:   required from here
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:87:38: error: no matching function for call to ‘innerProduct(double*&, double*&)’
+     return innerProduct(weights, data);
+                                      ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:87:38: note: candidate is:
+In file included from /home/jackhunt/GitRepos/pegasosSVM/src/CPU/../shared/svm.h:30:0,
+                 from /home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.h:31,
+                 from /home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:28:
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/../shared/general.h:83:10: note: template<class T> T innerProduct(T*, T*, int)
+ inline T innerProduct(T *A, T *B, int dim) {
+          ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/../shared/general.h:83:10: note:   template argument deduction/substitution failed:
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:87:38: note:   candidate expects 3 arguments, 2 provided
+     return innerProduct(weights, data);
+                                      ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp: In instantiation of ‘void pegasos::cpuSVM<T>::predict(T*, T*, int) [with T = double]’:
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:133:17:   required from here
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:99:66: error: no matching function for call to ‘innerProduct(double*&, double&)’
+         result[i] = innerProduct(weights, data[i * dataDimension]);
+                                                                  ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:99:66: note: candidate is:
+In file included from /home/jackhunt/GitRepos/pegasosSVM/src/CPU/../shared/svm.h:30:0,
+                 from /home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.h:31,
+                 from /home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:28:
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/../shared/general.h:83:10: note: template<class T> T innerProduct(T*, T*, int)
+ inline T innerProduct(T *A, T *B, int dim) {
+          ^
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/../shared/general.h:83:10: note:   template argument deduction/substitution failed:
+/home/jackhunt/GitRepos/pegasosSVM/src/CPU/cpu_svm.cpp:99:66: note:   mismatched types ‘T*’ and ‘double’
+         result[i] = innerProduct(weights, data[i * dataDimension]);
+                                                                  ^
+make[2]: *** [CMakeFiles/SVM.dir/src/CPU/cpu_svm.cpp.o] Error 1
+make[1]: *** [CMakeFiles/SVM.dir/all] Error 2
+make: *** [all] Error 2

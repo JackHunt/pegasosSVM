@@ -26,7 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef SVM_HEADER
-#define	SVM_HEADER
+#define SVM_HEADER
 #include "general.h"
 #include "training.h"
 
@@ -43,6 +43,10 @@ namespace pegasos {
         T *weights;
 
     public:
+
+        SVM() {
+            dataDimension = 0;
+        }
         SVM(int D, T lambda);
         virtual ~SVM() = 0;
         virtual void train(T *data, int *labels, int instances, int batchSize) = 0;

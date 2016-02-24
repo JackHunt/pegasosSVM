@@ -26,7 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef PEGASOS_CPU_SVM_HEADER
-#define	PEGASOS_CPU_SVM_HEADER
+#define PEGASOS_CPU_SVM_HEADER
 
 #include "../shared/svm.h"
 #include <cmath>
@@ -34,6 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vector>
 
 namespace pegasos {
+
     template<typename T>
     /*
      * gpuSVM class, derived from SVM defined in shared/svm.h

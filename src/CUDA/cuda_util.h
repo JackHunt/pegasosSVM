@@ -26,7 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef SVM_CUDA_UTIL_HEADER
-#define	SVM_CUDA_UTIL_HEADER
+#define SVM_CUDA_UTIL_HEADER
 
 #include <cuda_runtime.h>
 #include "cublas_v2.h"

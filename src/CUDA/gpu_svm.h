@@ -26,16 +26,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef PEGASOS_GPU_SVM_HEADER
-#define	PEGASOS_GPU_SVM_HEADER
+#define PEGASOS_GPU_SVM_HEADER
 
 #include "cuda.h"
 #include <cuda_runtime.h>
 #include "cublas_v2.h"
 #include <thrust/device_vector.h>
+#include <thrust/for_each.h>
+#include <thrust/execution_policy.h>
 #include <stdexcept>
 
 #include "../shared/svm.h"
 #include "cuda_util.h"
+#include "gpu_svm_kernels.h"
 
 /*
  * gpuSVM class, derived from SVM defined in shared/svm.h

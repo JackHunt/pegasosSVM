@@ -26,7 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef GENERAL_SHARED_FUNCTIONS_HEADER
-#define	GENERAL_SHARED_FUNCTIONS_HEADER
+#define GENERAL_SHARED_FUNCTIONS_HEADER
 
 #include <cstddef>
 #include "shared.h"
@@ -42,6 +42,10 @@ private:
 
 public:
 
+    DVector() {
+        dim = 0;
+    }
+
     DVector(int dim, T *in_data = NULL) : dim(dim) {
         data = new T[dim];
         for (int i = 0; i < dim; i++) {
@@ -53,19 +57,19 @@ public:
         delete[] data;
     }
 
-    T &operator[](int idx) {
+    T &operator[](int idx) const {
         return (idx >= dim) ? data[0] : data[idx];
     }
 
-            friend DVector<T> &operator+=(DVector<T> &lhs, const DVector<T> &rhs) {
-        for (int i = 0; i < lhs->dim; i++) {
+    friend DVector<T> &operator+=(DVector<T> &lhs, const DVector<T> &rhs) {
+        for (int i = 0; i < lhs.dim; i++) {
             lhs[i] += rhs[i];
         }
         return lhs;
     }
 
-            friend DVector<T> &operator*=(DVector<T> &lhs, const T &rhs) {
-        for (int i = 0; i < lhs->dim; i++) {
+    friend DVector<T> &operator*=(DVector<T> &lhs, const T &rhs) {
+        for (int i = 0; i < lhs.dim; i++) {
             lhs[i] *= rhs;
         }
         return lhs;
