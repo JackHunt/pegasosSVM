@@ -1,1 +1,0 @@
-/usr/bin/c++  -fPIC  -fopenmp   -shared -Wl,-soname,libSVM.so -o libSVM.so CMakeFiles/SVM.dir/src/CPU/cpu_svm.cpp.o CMakeFiles/SVM.dir/src/CUDA/./SVM_generated_gpu_svm.cu.o /usr/local/cuda/lib64/libcudart.so -Wl,-rpath,/usr/local/cuda/lib64 
