@@ -59,9 +59,11 @@ namespace pegasos {
         int dataDimension;
         T eta, lambda;
         T *weights;
+        int gpuID;
 
     public:
         gpuSVM(int D, T lambda);
+        gpuSVM(int D, T lambda, gpuID);
         ~gpuSVM();
         void train(T *data, int *labels, int instances, int batchSize);
         T predict(T *data);
