@@ -42,7 +42,6 @@ gpuSVM<T>::gpuSVM(int D, T lambda) : dataDimension(D), lambda(lambda){
     this->gpuID = 0;
     this->eta = (T) 0.0;
     
-    cudaSetDevice(this->gpuID);
     CUDA_CHECK(cudaMalloc((void**) & this->weights, D * sizeof (T)));
     CUBLAS_CHECK(cublasCreate_v2(&this->cublasHandle));
 }
@@ -64,7 +63,6 @@ gpuSVM<T>::gpuSVM(int D, T lambda, int gpuID) : dataDimension(D), lambda(lambda)
  */
 template<typename T>
 gpuSVM<T>::~gpuSVM(){
-    cudaSetDevice(this->gpuID);
     CUDA_CHECK(cudaFree(weights));
     cublasDestroy(cublasHandle);
 }
@@ -77,7 +75,6 @@ gpuSVM<T>::~gpuSVM(){
  */
 template<typename T>
 void gpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
-    cudaSetDevice(this->gpuID);
     T *dot, *reduced;
     thrust::device_ptr<T> dotP = thrust::device_pointer_cast(dot);
     thrust::device_ptr<T> reducedP = thrust::device_pointer_cast(reduced);
@@ -104,7 +101,6 @@ void gpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
  */
 template<typename T>
 T gpuSVM<T>::predict(T *data){
-    cudaSetDevice(this->gpuID);
     return innerProduct(weights, data, dataDimension);
 }
 
@@ -113,7 +109,6 @@ T gpuSVM<T>::predict(T *data){
  */
 template<typename T>
 void gpuSVM<T>::predict(T* data, T* result, int instances) {
-    cudaSetDevice(this->gpuID);
     cublasMatMult(CUBLAS_OP_N, CUBLAS_OP_N, instances, 1, dataDimension,
             (T) 1.0, data, weights, (T) 0.0, result);
 }
@@ -138,7 +133,6 @@ thrust::device_vector<int> gpuSVM<T>::getBatch(int batchSize, int numElements) {
 template<typename T>
 void gpuSVM<T>::cublasMatMult(cublasOperation_t transA, cublasOperation_t transB, int M,
         int N, int K, float alpha, float *A, float *B, float beta, float *C) {
-    cudaSetDevice(this->gpuID);
     int lda = (transA == CUBLAS_OP_N) ? K : M;
     int ldb = (transB == CUBLAS_OP_N) ? N : K;
     int ldc = N;
@@ -152,7 +146,6 @@ void gpuSVM<T>::cublasMatMult(cublasOperation_t transA, cublasOperation_t transB
 template<typename T>
 void gpuSVM<T>::cublasMatMult(cublasOperation_t transA, cublasOperation_t transB, int M,
         int N, int K, double alpha, double *A, double *B, double beta, double *C) {
-    cudaSetDevice(this->gpuID);
     int lda = (transA == CUBLAS_OP_N) ? K : M;
     int ldb = (transB == CUBLAS_OP_N) ? N : K;
     int ldc = N;

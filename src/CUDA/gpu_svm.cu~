@@ -49,6 +49,7 @@ gpuSVM<T>::gpuSVM(int D, T lambda) : dataDimension(D), lambda(lambda){
 
 /*
  * Used to specify CUDA device to use.
+ * TO-DO: Tidy this up, code duplication! Bad!
  */
 template<typename T>
 gpuSVM<T>::gpuSVM(int D, T lambda, int gpuID) : dataDimension(D), lambda(lambda), gpuID(gpuID){
