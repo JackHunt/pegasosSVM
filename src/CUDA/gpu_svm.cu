@@ -49,9 +49,15 @@ gpuSVM<T>::gpuSVM(int D, T lambda) : dataDimension(D), lambda(lambda){
 
 /*
  * Used to specify CUDA device to use.
+ * TO-DO: Tidy this up, code duplication! Bad!
  */
 template<typename T>
-gpuSVM<T>::gpuSVM(int D, T lambda, int gpuID) : gpuSVM(D, lambda), gpuID(gpuID) {}
+gpuSVM<T>::gpuSVM(int D, T lambda, int gpuID) : dataDimension(D), lambda(lambda), gpuID(gpuID){
+    this->eta = (T) 0.0;
+    cudaSetDevice(this->gpuID);
+    CUDA_CHECK(cudaMalloc((void**) & this->weights, D * sizeof (T)));
+    CUBLAS_CHECK(cublasCreate_v2(&this->cublasHandle));
+}
 
 /*
  * Clean weight vector and destroy cuBLAS context.
