@@ -76,14 +76,14 @@ gpuSVM<T>::~gpuSVM(){
 template<typename T>
 void gpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
     T *dot, *reduced;
-    thrust::device_ptr<T> dotP = thrust::device_pointer_cast(dot);
-    thrust::device_ptr<T> reducedP = thrust::device_pointer_cast(reduced);
+    int gridDimension;
     CUDA_CHECK(cudaMalloc((void**) &dot, instances * sizeof (T)));
     CUDA_CHECK(cudaMalloc((void**) &reduced, dataDimension * sizeof (T)));
     if (batchSize == instances) {
         cublasMatMult(CUBLAS_OP_N, CUBLAS_OP_N, instances, 1, dataDimension,
                 (T) 1.0, data, weights, (T) 0.0, dot);
-        thrust::for_each(thrust::device, dotP, dotP + instances, dotFunctor<T>(dot, labels, instances));
+        gridDimension = (int)ceil((float)instances / (float)CUDA_BLOCK_DIM);
+        dotToIndicator_kernel<<<gridDimension, CUDA_BLOCK_DIM>>>(dot, labels, instances);
         cublasMatMult(CUBLAS_OP_T, CUBLAS_OP_T, dataDimension, 1, instances,
                 (T) 1.0, data, dot, (T) 0.0, reduced);
     } else {
@@ -91,7 +91,8 @@ void gpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
     }
     T c1 = (T) 1.0 - (eta * lambda);
     T c2 = eta / (T) batchSize;
-    thrust::for_each(thrust::device, reducedP, reducedP + dataDimension, updateFunctor<T>(weights, reduced, c1, c2));
+    gridDimension = (int)ceil((float)dataDimension / (float)CUDA_BLOCK_DIM);
+    weightUpdate_kernel<<<gridDimension, CUDA_BLOCK_DIM>>>(weights, reduced, c1, c2, dataDimension);
     CUDA_CHECK(cudaFree(dot));
     CUDA_CHECK(cudaFree(reduced))
 }

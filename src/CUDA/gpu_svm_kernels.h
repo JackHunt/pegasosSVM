@@ -33,62 +33,32 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /*
  * Utility function, yields current threads index w.r.t the memory range that 
- * the currently executing grid is operating on.
+ * the currently executing grid is operating on. 1D block, 1D grid.
  */
-__SHARED_CODE__
+__device__
 inline int getIdx() {
     return blockIdx.x * blockDim.x + threadIdx.x;
 }
 
 /*
- * Dot/Inner product functor predicate function.
+ * Dot/Inner product kernel.
  */
 template<typename T>
-__device__
-inline void dotToIndicator(T *dot, int *labels, int length) {
+__global__
+void dotToIndicator_kernel(T *dot, int *labels, int length) {
     int idx = getIdx();
     if (idx < 0 || idx > length) return;
-
     dot[idx] = (dot[idx] < (T) 1.0) ? (T) labels[idx] : (T) 0.0;
 }
 
 /*
- * Functor to apply indicator function to the results of the dot/inner product 
- * operation, predicated on the value being <1 - see pegasos paper.
+ * Kernel performing weight update for a single weight vector element.
  */
 template<typename T>
-struct dotFunctor {
-    T *dot;
-    int *labels, length;
-
-    __SHARED_CODE__
-    dotFunctor(T *dot, int *labels, int length) :
-    dot(dot), labels(labels), length(length) {
-    }
-
-    __SHARED_CODE__
-    void operator()(T dummy) {
-        dotToIndicator(dot, labels, length);
-    }
-};
-
-/*
- * Functor to apply element wise weight update.
- */
-template<typename T>
-struct updateFunctor {
-    T *weight, *batchSum, c1, c2;
-
-    __SHARED_CODE__
-    updateFunctor(T *weight, T *batchSum, T c1, T c2) :
-    weight(weight), batchSum(batchSum), c1(c1), c2(c2) {
-    }
-
-    __SHARED_CODE__
-    void operator()(T dummy) {
-        int idx = getIdx();
-        weightUpdateIndividual(weight, batchSum, c1, c2, idx);
-    }
-};
-
+__global__
+void weightUpdate_kernel(T *weights, T *batchSum, T c1, T c2, int length){
+    int idx = getIdx();
+    if (idx < 0 || idx > length) return;
+    weightUpdateIndividual(weights, batchSum, c1, c2, idx);
+}
 #endif
