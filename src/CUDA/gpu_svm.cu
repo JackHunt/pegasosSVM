@@ -41,8 +41,15 @@ template<typename T>
 gpuSVM<T>::gpuSVM(int D, T lambda) : dataDimension(D), lambda(lambda){
     this->gpuID = 0;
     this->eta = (T) 0.0;
+    this->timeStep = 1;
     
     CUDA_CHECK(cudaMalloc((void**) & this->weights, D * sizeof (T)));
+    srand(time(0));
+    T tmp[D];
+    for(int i=0; i<D; i++){
+        tmp[i] = (T)rand()/(T)RAND_MAX;
+    }
+    CUDA_CHECK(cudaMemcpy(this->weights, &tmp, D*sizeof(T), cudaMemcpyHostToDevice));
     CUBLAS_CHECK(cublasCreate_v2(&this->cublasHandle));
 }
 
@@ -53,6 +60,7 @@ gpuSVM<T>::gpuSVM(int D, T lambda) : dataDimension(D), lambda(lambda){
 template<typename T>
 gpuSVM<T>::gpuSVM(int D, T lambda, int gpuID) : dataDimension(D), lambda(lambda), gpuID(gpuID){
     this->eta = (T) 0.0;
+    this->timeStep = 0;
     cudaSetDevice(this->gpuID);
     CUDA_CHECK(cudaMalloc((void**) & this->weights, D * sizeof (T)));
     CUBLAS_CHECK(cublasCreate_v2(&this->cublasHandle));
@@ -84,8 +92,7 @@ void gpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
                 (T) 1.0, data, weights, (T) 0.0, dot);
         gridDimension = (int)ceil((float)instances / (float)CUDA_BLOCK_DIM);
         dotToIndicator_kernel<<<gridDimension, CUDA_BLOCK_DIM>>>(dot, labels, instances);
-        cublasMatMult(CUBLAS_OP_T, CUBLAS_OP_T, dataDimension, 1, instances,
-                (T) 1.0, data, dot, (T) 0.0, reduced);
+        cublasMatVecMult(CUBLAS_OP_T, instances, dataDimension, (T) 1.0, data, dot, (T) 0.0, reduced);
     } else {
         throw std::invalid_argument("batchSize != instances not yet implemented!");
     }
@@ -93,6 +100,8 @@ void gpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
     T c2 = eta / (T) batchSize;
     gridDimension = (int)ceil((float)dataDimension / (float)CUDA_BLOCK_DIM);
     weightUpdate_kernel<<<gridDimension, CUDA_BLOCK_DIM>>>(weights, reduced, c1, c2, dataDimension);
+    eta = computeEta<T>(lambda, timeStep);
+    timeStep++;
     CUDA_CHECK(cudaFree(dot));
     CUDA_CHECK(cudaFree(reduced))
 }
@@ -102,7 +111,11 @@ void gpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
  */
 template<typename T>
 T gpuSVM<T>::predict(T *data){
-    return innerProduct(weights, data, dataDimension);
+    T weights_cpu[dataDimension];
+    T data_cpu[dataDimension];
+    CUDA_CHECK(cudaMemcpy(weights_cpu, weights, dataDimension*sizeof(T), cudaMemcpyDeviceToHost));
+    CUDA_CHECK(cudaMemcpy(data_cpu, data, dataDimension*sizeof(T), cudaMemcpyDeviceToHost));
+    return innerProduct(weights_cpu, data_cpu, dataDimension);
 }
 
 /*
@@ -110,8 +123,15 @@ T gpuSVM<T>::predict(T *data){
  */
 template<typename T>
 void gpuSVM<T>::predict(T* data, T* result, int instances) {
-    cublasMatMult(CUBLAS_OP_N, CUBLAS_OP_N, instances, 1, dataDimension,
-            (T) 1.0, data, weights, (T) 0.0, result);
+    cublasMatVecMult(CUBLAS_OP_T, instances, dataDimension, (T) 1.0, data, weights, (T) 0.0, result);
+}
+
+/*
+ * Resets the time step counter.
+ */
+template<typename T>
+void gpuSVM<T>::resetTimeStep(){
+    timeStep = 1;
 }
 
 //------------------------------------------------------------------------------
@@ -154,5 +174,24 @@ void gpuSVM<T>::cublasMatMult(cublasOperation_t transA, cublasOperation_t transB
             B, ldb, A, lda, &beta, C, ldc));
 }
 
+/*
+ * cuBLAS Matrix-Vector multiplication in the case of T=float
+ */
+template<typename T>
+void gpuSVM<T>::cublasMatVecMult(cublasOperation_t transA, int M, int N, float alpha, float *A, 
+        float *x, float beta, float *C){
+    int lda = (transA == CUBLAS_OP_N) ? M : N;
+    CUBLAS_CHECK(cublasSgemv_v2(cublasHandle, transA, N, M, &alpha, A, lda, x, 1, &beta, C, 1));
+}
+
+/*
+ * cuBLAS Matrix-Vector multiplication in the case of T=double
+ */
+template<typename T>
+void gpuSVM<T>::cublasMatVecMult(cublasOperation_t transA, int M, int N, double alpha, double *A, 
+        double *x, double beta, double *C){
+    int lda = (transA == CUBLAS_OP_N) ? M : N;
+    CUBLAS_CHECK(cublasDgemv_v2(cublasHandle, transA, N, M, &alpha, A, lda, x, 1, &beta, C, 1));
+}
 template class gpuSVM<float>;
 template class gpuSVM<double>;

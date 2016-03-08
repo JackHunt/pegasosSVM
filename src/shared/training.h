@@ -35,7 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 template<typename T>
 __SHARED_CODE__
-inline T computeEta(T *lambda, int t) {
+inline T computeEta(T lambda, int t) {
     return (T) (1.0 / (lambda * (T) t));
 }
 

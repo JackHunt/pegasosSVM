@@ -53,13 +53,17 @@ namespace pegasos {
                 int M, int N, int K, float alpha, float *A, float *B, float beta, float *C);
         void cublasMatMult(cublasOperation_t transA, cublasOperation_t transB,
                 int M, int N, int K, double alpha, double *A, double *B, double beta, double *C);
+        void cublasMatVecMult(cublasOperation_t transA, int M, int N, float alpha, float *A, 
+                float *x, float beta, float *C);
+        void cublasMatVecMult(cublasOperation_t transA, int M, int N, double alpha, double *A, 
+                double *x, double beta, double *C);
 
     protected:
         thrust::device_vector<int> getBatch(int batchSize, int numElements);
         int dataDimension;
         T eta, lambda;
         T *weights;
-        int gpuID;
+        int gpuID, timeStep;
 
     public:
         gpuSVM(int D, T lambda);
@@ -68,6 +72,7 @@ namespace pegasos {
         void train(T *data, int *labels, int instances, int batchSize);
         T predict(T *data);
         void predict(T *data, T *result, int instances);
+        void resetTimeStep();
     };
 }
 #endif
