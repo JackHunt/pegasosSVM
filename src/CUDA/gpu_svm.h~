@@ -73,6 +73,7 @@ namespace pegasos {
         T predict(T *data);
         void predict(T *data, T *result, int instances);
         void resetTimeStep();
+        void reset();
     };
 }
 #endif

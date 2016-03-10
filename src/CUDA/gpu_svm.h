@@ -49,10 +49,6 @@ namespace pegasos {
     class gpuSVM : public SVM<T> {
     private:
         cublasHandle_t cublasHandle;
-        void cublasMatMult(cublasOperation_t transA, cublasOperation_t transB,
-                int M, int N, int K, float alpha, float *A, float *B, float beta, float *C);
-        void cublasMatMult(cublasOperation_t transA, cublasOperation_t transB,
-                int M, int N, int K, double alpha, double *A, double *B, double beta, double *C);
         void cublasMatVecMult(cublasOperation_t transA, int M, int N, float alpha, float *A, 
                 float *x, float beta, float *C);
         void cublasMatVecMult(cublasOperation_t transA, int M, int N, double alpha, double *A, 
@@ -73,6 +69,7 @@ namespace pegasos {
         T predict(T *data);
         void predict(T *data, T *result, int instances);
         void resetTimeStep();
+        void reset();
     };
 }
 #endif

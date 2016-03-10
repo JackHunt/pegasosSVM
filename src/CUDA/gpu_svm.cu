@@ -41,15 +41,9 @@ template<typename T>
 gpuSVM<T>::gpuSVM(int D, T lambda) : dataDimension(D), lambda(lambda){
     this->gpuID = 0;
     this->eta = (T) 0.0;
-    this->timeStep = 1;
+    this->weights = NULL;
+    this->reset();
     
-    CUDA_CHECK(cudaMalloc((void**) & this->weights, D * sizeof (T)));
-    srand(time(0));
-    T tmp[D];
-    for(int i=0; i<D; i++){
-        tmp[i] = (T)rand()/(T)RAND_MAX;
-    }
-    CUDA_CHECK(cudaMemcpy(this->weights, &tmp, D*sizeof(T), cudaMemcpyHostToDevice));
     CUBLAS_CHECK(cublasCreate_v2(&this->cublasHandle));
 }
 
@@ -88,8 +82,7 @@ void gpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
     CUDA_CHECK(cudaMalloc((void**) &dot, instances * sizeof (T)));
     CUDA_CHECK(cudaMalloc((void**) &reduced, dataDimension * sizeof (T)));
     if (batchSize == instances) {
-        cublasMatMult(CUBLAS_OP_N, CUBLAS_OP_N, instances, 1, dataDimension,
-                (T) 1.0, data, weights, (T) 0.0, dot);
+        cublasMatVecMult(CUBLAS_OP_T, instances, dataDimension, (T)1.0, data, weights, (T)0.0, dot);
         gridDimension = (int)ceil((float)instances / (float)CUDA_BLOCK_DIM);
         dotToIndicator_kernel<<<gridDimension, CUDA_BLOCK_DIM>>>(dot, labels, instances);
         cublasMatVecMult(CUBLAS_OP_T, instances, dataDimension, (T) 1.0, data, dot, (T) 0.0, reduced);
@@ -134,6 +127,23 @@ void gpuSVM<T>::resetTimeStep(){
     timeStep = 1;
 }
 
+/*
+ * Randomises the weight vector and resets the time step.
+ */
+template<typename T>
+void gpuSVM<T>::reset(){
+    resetTimeStep();
+    if(this->weights == NULL){
+        CUDA_CHECK(cudaMalloc((void**) & this->weights, dataDimension * sizeof (T)));
+    }
+    srand(time(0));
+    T tmp[dataDimension];
+    for(int i=0; i<dataDimension; i++){
+        tmp[i] = (T)rand()/(T)RAND_MAX;
+    }
+    CUDA_CHECK(cudaMemcpy(this->weights, &tmp, dataDimension*sizeof(T), cudaMemcpyHostToDevice));
+}
+
 //------------------------------------------------------------------------------
 //Protected and Private members.
 //------------------------------------------------------------------------------
@@ -146,32 +156,6 @@ void gpuSVM<T>::resetTimeStep(){
 template<typename T>
 thrust::device_vector<int> gpuSVM<T>::getBatch(int batchSize, int numElements) {
     throw std::invalid_argument("Mini batches not yet implemented.");
-}
-
-/*
- * cuBLAS Matrix multiplication in the case of T=float
- */
-template<typename T>
-void gpuSVM<T>::cublasMatMult(cublasOperation_t transA, cublasOperation_t transB, int M,
-        int N, int K, float alpha, float *A, float *B, float beta, float *C) {
-    int lda = (transA == CUBLAS_OP_N) ? K : M;
-    int ldb = (transB == CUBLAS_OP_N) ? N : K;
-    int ldc = N;
-    CUBLAS_CHECK(cublasSgemm_v2(cublasHandle, transB, transA, N, M, K, &alpha,
-            B, ldb, A, lda, &beta, C, ldc));
-}
-
-/*
- * cuBLAS Matrix multiplication in the case of T=double
- */
-template<typename T>
-void gpuSVM<T>::cublasMatMult(cublasOperation_t transA, cublasOperation_t transB, int M,
-        int N, int K, double alpha, double *A, double *B, double beta, double *C) {
-    int lda = (transA == CUBLAS_OP_N) ? K : M;
-    int ldb = (transB == CUBLAS_OP_N) ? N : K;
-    int ldc = N;
-    CUBLAS_CHECK(cublasDgemm_v2(cublasHandle, transB, transA, N, M, K, &alpha,
-            B, ldb, A, lda, &beta, C, ldc));
 }
 
 /*

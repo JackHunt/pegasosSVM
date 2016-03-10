@@ -52,6 +52,7 @@ namespace pegasos {
         virtual T predict(T *data) = 0;
         virtual void predict(T *data, T *result, int instances) = 0;
         virtual void resetTimeStep() = 0;
+        virtual void reset() = 0;
     };
 }
 #endif
