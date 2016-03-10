@@ -90,6 +90,7 @@ void gpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
         throw std::invalid_argument("batchSize != instances not yet implemented!");
     }
     T c1 = (T) 1.0 - (eta * lambda);
+    if(c1 < 0.000001) c1 = (T)1.0;
     T c2 = eta / (T) batchSize;
     gridDimension = (int)ceil((float)dataDimension / (float)CUDA_BLOCK_DIM);
     weightUpdate_kernel<<<gridDimension, CUDA_BLOCK_DIM>>>(weights, reduced, c1, c2, dataDimension);
