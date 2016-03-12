@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cmath>
 #include <cstdlib>
 #include <vector>
+#include <Accelerate/Accelerate.h>
 
 namespace pegasos {
 
@@ -40,6 +41,8 @@ namespace pegasos {
      * gpuSVM class, derived from SVM defined in shared/svm.h
      */
     class cpuSVM : public SVM<T> {
+    private:
+        void blasMatVecMult();
     protected:
         std::vector<int> getBatch(int batchSize, int numElements);
         int dataDimension;
@@ -52,6 +55,7 @@ namespace pegasos {
         void train(T *data, int *labels, int instances, int batchSize);
         T predict(T *data);
         void predict(T *data, T *result, int instances);
+        void reset() = 0;
     };
 }
 #endif

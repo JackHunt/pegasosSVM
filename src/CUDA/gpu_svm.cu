@@ -39,24 +39,8 @@ using namespace pegasos;
  */
 template<typename T>
 gpuSVM<T>::gpuSVM(int D, T lambda) : dataDimension(D), lambda(lambda){
-    this->gpuID = 0;
-    this->eta = (T) 0.0;
-    this->weights = NULL;
+    CUDA_CHECK(cudaMalloc((void**) & this->weights, dataDimension * sizeof (T)));
     this->reset();
-    
-    CUBLAS_CHECK(cublasCreate_v2(&this->cublasHandle));
-}
-
-/*
- * Used to specify CUDA device to use.
- * TO-DO: Tidy this up, code duplication! Bad!
- */
-template<typename T>
-gpuSVM<T>::gpuSVM(int D, T lambda, int gpuID) : dataDimension(D), lambda(lambda), gpuID(gpuID){
-    this->eta = (T) 0.0;
-    this->timeStep = 0;
-    cudaSetDevice(this->gpuID);
-    CUDA_CHECK(cudaMalloc((void**) & this->weights, D * sizeof (T)));
     CUBLAS_CHECK(cublasCreate_v2(&this->cublasHandle));
 }
 
@@ -79,19 +63,18 @@ template<typename T>
 void gpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
     T *dot, *reduced;
     int gridDimension;
-    CUDA_CHECK(cudaMalloc((void**) &dot, instances * sizeof (T)));
+    CUDA_CHECK(cudaMalloc((void**) &dot, batchSize * sizeof (T)));
     CUDA_CHECK(cudaMalloc((void**) &reduced, dataDimension * sizeof (T)));
     if (batchSize == instances) {
-        cublasMatVecMult(CUBLAS_OP_T, instances, dataDimension, (T)1.0, data, weights, (T)0.0, dot);
-        gridDimension = (int)ceil((float)instances / (float)CUDA_BLOCK_DIM);
-        dotToIndicator_kernel<<<gridDimension, CUDA_BLOCK_DIM>>>(dot, labels, instances);
-        cublasMatVecMult(CUBLAS_OP_T, instances, dataDimension, (T) 1.0, data, dot, (T) 0.0, reduced);
+        cublasMatVecMult(CUBLAS_OP_T, batchSize, dataDimension, (T)1.0, data, weights, (T)0.0, dot);
+        gridDimension = (int)ceil((float)batchSize / (float)CUDA_BLOCK_DIM);
+        dotToIndicator_kernel<<<gridDimension, CUDA_BLOCK_DIM>>>(dot, labels, batchSize);
+        cublasMatVecMult(CUBLAS_OP_T, batchSize, dataDimension, (T) 1.0, data, dot, (T) 0.0, reduced);
     } else {
         throw std::invalid_argument("batchSize != instances not yet implemented!");
     }
-    T c1 = (T) 1.0 - (eta * lambda);
-    if(c1 < 0.000001) c1 = (T)1.0;
-    T c2 = eta / (T) batchSize;
+    T c1 = computeCoeff1<T>(eta, lambda);
+    T c2 = computeCoeff2<T>(eta, batchSize);
     gridDimension = (int)ceil((float)dataDimension / (float)CUDA_BLOCK_DIM);
     weightUpdate_kernel<<<gridDimension, CUDA_BLOCK_DIM>>>(weights, reduced, c1, c2, dataDimension);
     eta = computeEta<T>(lambda, timeStep);
@@ -121,22 +104,12 @@ void gpuSVM<T>::predict(T* data, T* result, int instances) {
 }
 
 /*
- * Resets the time step counter.
- */
-template<typename T>
-void gpuSVM<T>::resetTimeStep(){
-    timeStep = 1;
-}
-
-/*
  * Randomises the weight vector and resets the time step.
  */
 template<typename T>
 void gpuSVM<T>::reset(){
-    resetTimeStep();
-    if(this->weights == NULL){
-        CUDA_CHECK(cudaMalloc((void**) & this->weights, dataDimension * sizeof (T)));
-    }
+    this->eta = (T)0.0;
+    this->timeStep = 1;
     srand(time(0));
     T tmp[dataDimension];
     for(int i=0; i<dataDimension; i++){
@@ -148,7 +121,6 @@ void gpuSVM<T>::reset(){
 //------------------------------------------------------------------------------
 //Protected and Private members.
 //------------------------------------------------------------------------------
-
 /*
  * CURRENTLY UNIMPLEMENTED.
  * Will generate random mini batches. Currently prohibited by performance 

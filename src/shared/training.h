@@ -40,6 +40,25 @@ inline T computeEta(T lambda, int t) {
 }
 
 /*
+ * Computes coefficient 1 of the weight update.
+ */
+template<typename T>
+__SHARED_CODE__
+inline T computeCoeff1(T eta, T lambda){
+    T c1  = (T)1.0 - (eta * lambda);
+    return (c1 < 0.000001) ? (T)1.0 : c1;
+}
+
+/*
+ * Computes coefficient 2 of the weight update.
+ */
+template<typename T>
+__SHARED_CODE__
+inline T computeCoeff2(T eta, int batchSize){
+    return eta / (T)batchSize;
+}
+
+/*
  * Applies weight update to a single element of a given weight vector, taking
  * lambda and eta as parameters.
  * TO-DO: change c1 and c2 to be more descriptive.

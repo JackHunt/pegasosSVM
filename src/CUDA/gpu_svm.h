@@ -68,7 +68,6 @@ namespace pegasos {
         void train(T *data, int *labels, int instances, int batchSize);
         T predict(T *data);
         void predict(T *data, T *result, int instances);
-        void resetTimeStep();
         void reset();
     };
 }

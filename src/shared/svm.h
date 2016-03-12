@@ -38,20 +38,17 @@ namespace pegasos {
     template<typename T>
     class SVM {
     protected:
-        int dataDimension;
+        int dataDimension, timeStep;
         T eta, lambda;
         T *weights;
 
     public:
 
-        SVM() {
-            dataDimension = 0;
-        }
+        SVM() : dataDimension(0), timeStep(1), eta(0.0){};
         SVM(int D, T lambda);
         virtual void train(T *data, int *labels, int instances, int batchSize) = 0;
         virtual T predict(T *data) = 0;
         virtual void predict(T *data, T *result, int instances) = 0;
-        virtual void resetTimeStep() = 0;
         virtual void reset() = 0;
     };
 }

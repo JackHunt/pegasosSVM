@@ -11,6 +11,9 @@ else(MSVC_IDE)
   set(CMAKE_CXX_FLAGS_RELEASE "-Wall -fPIC -O3 -march=native")
 endif(MSVC_IDE)
 
+#Attempt to find CBLAS.
+find_package(BLAS REQUIRED)
+
 #Attempt to find CUDA.
 find_package(CUDA QUIET)
 option(WITH_CUDA " To be built with CUDA support?" ${CUDA_FOUND})

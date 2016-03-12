@@ -34,93 +34,103 @@ using namespace pegasos;
 //------------------------------------------------------------------------------
 
 /*
- * Initialise the SVM.
+ * See comments in src/CUDA/gpu_svm.h
  */
 template<typename T>
 cpuSVM<T>::cpuSVM(int D, T lambda) : dataDimension(D), lambda(lambda) {
     this->weights = new T[D];
-    this->reset();
+    for (int i = 0; i < D; i++) {
+        this->weights[i] = (T) 0.0;
+    }
+    this->eta = (T) 0.0;
 }
 
 /*
- * Deallocates temporary buffers.
+ * Clear weight vector.
  */
 template<typename T>
-cpuSVM<T>::~cpuSVM(){
+cpuSVM<T>::~cpuSVM() {
     delete[] weights;
 }
 
 /*
- * Performs batch training.
+ * Perform a single training iteration. Parallelised with OpenMP. Direct 
+ * translation of algorithm presented in pegasos paper.
+ * TO-DO: Optimise parallelism, at present, critical section enforces serial 
+ * execution.
  */
 template<typename T>
-void cpuSVM<T>::train(T *data, int *labels, int instances, int batchSize){
-    T *dot, *reduced;
-    if(batchSize == instances){
-        dot = new T[batchSize];
-        reduced = new T[dataDimension];
-        blasMatVecMult();
-        //Dot to indicator.
-        blasMatVecMult();
-    }else{
-        throw std::invalid_argument("batchSize != instances not yet implemented!");;
+void cpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
+    std::vector<int> batch = getBatch(batchSize, instances);
+    DVector<T> batchSum(dataDimension);
+    #if defined(_OPENMP)
+    #pragma omp parallel for
+    #endif
+    for (int i = 0; i < batch.size(); i++) {
+        T inner = innerProduct(weights, &data[batch[i]], dataDimension);
+        if (labels[batch[i]] * inner < 1.0) {
+            DVector<T> dataVec(dataDimension, &data[batch[i] * dataDimension]);
+            dataVec *= (T) labels[batch[i]];
+            #if defined(_OPENMP)
+            #pragma omp critical
+            #endif
+            {
+                batchSum += dataVec;
+            }
+        }
     }
-    T c1 = computeCoeff1<T>(eta, lambda);
-    T c2 = computeCoeff2<T>(eta, batchSize);
-    //Weight update.
-    eta = computeEta<T>(lambda, timeStep);
-    //timeStep++;
-    
-    delete[] dot;
-    delete[] reduced;
+    weightUpdate(weights, eta, lambda, batchSize, &batchSum[0], dataDimension);
 }
 
 /*
- * Return SVM output for a given data point.
+ * See comment in src/CUDA/gpu_svm.h
  */
 template<typename T>
-T cpuSVM<T>::predict(T *data){
+T cpuSVM<T>::predict(T *data) {
     return innerProduct(weights, data, dataDimension);
 }
 
 /*
- * Assigns SVM outputs for a given batch of instances.
+ * See comment in src/CUDA/gpu_svm.h
  */
 template<typename T>
 void cpuSVM<T>::predict(T* data, T* result, int instances) {
-    blasMatVecMult();
-}
-
-/*
- * Reset the SVM.
- */
-template<typename T>
-void cpuSVM<T>::reset(){
-    srand(time(0));
-    for (int i=0; i<this->dataDimension; i++) {
-        this->weights[i] = (T)rand()/(T)RAND_MAX;
+#if defined(_OPENMP)
+#pragma omp parallel for
+#endif
+    for (int i = 0; i < instances; i++) {
+        result[i] = innerProduct(weights, &data[i * dataDimension], dataDimension);
     }
-    this->timeStep = 1;
-    this->eta = (T) 0.0;
 }
 
 //------------------------------------------------------------------------------
-//Protected and Private members.
+//Protected members.
 //------------------------------------------------------------------------------
+
 /*
- * CURRENTLY UNIMPLEMENTED.
+ * Returns a random batch of size batchSize, w.r.t the input dataset.
  */
 template<typename T>
 std::vector<int> cpuSVM<T>::getBatch(int batchSize, int numElements) {
-    throw std::invalid_argument("Mini batches not yet implemented.");
-}
-
-/*
- * BLAS Matrix-Vector multiplication in the case of T=float
- */
-template<typename T>
-void cpuSVM<T>::blasMatVecMult(){
-    //
+    if (batchSize < numElements) {
+        std::vector<int> batchIndices(batchSize);
+#if defined(_OPENMP)
+#pragma omp parallel for
+#endif
+        for (int i = 0; i < batchSize; i++) {
+            batchIndices[i] = ((rand() % batchSize));
+        }
+        return batchIndices;
+    } else {
+        std::vector<int> batchIndices(numElements);
+#if defined(_OPENMP)
+#pragma omp parallel for
+#endif
+        for (int i = 0; i < numElements; i++) {
+            batchIndices[i] = i;
+        }
+        return batchIndices;
+    }
 }
 
 template class cpuSVM<float>;
