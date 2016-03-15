@@ -49,21 +49,20 @@ namespace pegasos {
     class gpuSVM : public SVM<T> {
     private:
         cublasHandle_t cublasHandle;
-        void cublasMatVecMult(cublasOperation_t transA, int M, int N, float alpha, float *A, 
+        void cublasMatVecMult(cublasOperation_t transA, int M, int N, float alpha, float *A,
                 float *x, float beta, float *C);
-        void cublasMatVecMult(cublasOperation_t transA, int M, int N, double alpha, double *A, 
+        void cublasMatVecMult(cublasOperation_t transA, int M, int N, double alpha, double *A,
                 double *x, double beta, double *C);
+        void setIntercept(T *dot, int *labels, int batchSize);
 
     protected:
         thrust::device_vector<int> getBatch(int batchSize, int numElements);
-        int dataDimension;
-        T eta, lambda;
+        int dataDimension, timeStep;
+        T eta, lambda, b;
         T *weights;
-        int gpuID, timeStep;
 
     public:
         gpuSVM(int D, T lambda);
-        gpuSVM(int D, T lambda, int gpuID);
         ~gpuSVM();
         void train(T *data, int *labels, int instances, int batchSize);
         T predict(T *data);

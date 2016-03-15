@@ -28,53 +28,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef GENERAL_SHARED_FUNCTIONS_HEADER
 #define GENERAL_SHARED_FUNCTIONS_HEADER
 
+#include <cstdlib>
+#include <cmath>
 #include <cstddef>
 #include "shared.h"
-
-/*
- * Simple vector structure to facilitate CPU reduction.
- */
-template<typename T>
-class DVector {
-private:
-    T *data;
-    int dim;
-
-public:
-
-    DVector() {
-        dim = 0;
-    }
-
-    DVector(int dim, T *in_data = NULL) : dim(dim) {
-        data = new T[dim];
-        for (int i = 0; i < dim; i++) {
-            data[i] = (in_data == NULL) ? (T) 0.0 : in_data[i];
-        }
-    }
-
-    ~DVector() {
-        delete[] data;
-    }
-
-    T &operator[](int idx) const {
-        return (idx >= dim) ? data[0] : data[idx];
-    }
-
-    friend DVector<T> &operator+=(DVector<T> &lhs, const DVector<T> &rhs) {
-        for (int i = 0; i < lhs.dim; i++) {
-            lhs[i] += rhs[i];
-        }
-        return lhs;
-    }
-
-    friend DVector<T> &operator*=(DVector<T> &lhs, const T &rhs) {
-        for (int i = 0; i < lhs.dim; i++) {
-            lhs[i] *= rhs;
-        }
-        return lhs;
-    }
-};
 
 /*
  * Compute inner product of some vector in contiguous memory.
@@ -101,6 +58,21 @@ inline void multiply(T *A, T *B, T *out, int dim) {
         tmp = A[i] * B[i];
         out[i] = tmp;
     }
+}
+
+/*
+ * Computes L2 norm for some given vector.
+ */
+template<typename T>
+__SHARED_CODE__
+inline T l2Norm(T *vec, int dim) {
+    T norm = 0.0;
+    T tmp;
+    for (int i = 0; i < dim; i++) {
+        tmp = fabs(vec[i]);
+        norm += tmp*tmp;
+    }
+    return sqrt(norm);
 }
 
 #endif

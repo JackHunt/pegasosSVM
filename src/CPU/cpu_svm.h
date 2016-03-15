@@ -32,7 +32,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cmath>
 #include <cstdlib>
 #include <vector>
-#include <Accelerate/Accelerate.h>
+#include <stdexcept>
+
+extern "C" {
+#include <cblas.h>
+}
 
 namespace pegasos {
 
@@ -42,11 +46,14 @@ namespace pegasos {
      */
     class cpuSVM : public SVM<T> {
     private:
-        void blasMatVecMult();
+        void blasMatVecMult(CBLAS_TRANSPOSE transA, int M, int N, float alpha, float *A,
+                float *x, float beta, float *C);
+        void blasMatVecMult(CBLAS_TRANSPOSE transA, int M, int N, double alpha, double *A,
+                double *x, double beta, double *C);
     protected:
         std::vector<int> getBatch(int batchSize, int numElements);
-        int dataDimension;
-        T eta, lambda;
+        int dataDimension, timeStep;
+        T eta, lambda, b;
         T *weights;
 
     public:
@@ -55,7 +62,7 @@ namespace pegasos {
         void train(T *data, int *labels, int instances, int batchSize);
         T predict(T *data);
         void predict(T *data, T *result, int instances);
-        void reset() = 0;
+        void reset();
     };
 }
 #endif

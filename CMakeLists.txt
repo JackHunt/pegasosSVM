@@ -7,12 +7,15 @@ if(MSVC_IDE)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
   add_definitions(-DUSING_CMAKE=1)
 else(MSVC_IDE)
-  set(CMAKE_CXX_FLAGS_DEBUG "-Wall -fPIC -g -march=native")
-  set(CMAKE_CXX_FLAGS_RELEASE "-Wall -fPIC -O3 -march=native")
+  set(CMAKE_CXX_FLAGS_DEBUG "-Wall -fPIC -g -march=native -fpermissive")
+  set(CMAKE_CXX_FLAGS_RELEASE "-Wall -fPIC -O3 -march=native -fpermissive")
 endif(MSVC_IDE)
 
 #Attempt to find CBLAS.
 find_package(BLAS REQUIRED)
+include_directories(${BLAS_INCLUDE_DIRS})
+find_package(LAPACK REQUIRED)
+include_directories(${LAPACK_INCLUDE_DIRS})
 
 #Attempt to find CUDA.
 find_package(CUDA QUIET)
@@ -59,4 +62,5 @@ if(WITH_CUDA)
 else(WITH_CUDA)
   add_definitions(-DCOMPILE_WITHOUT_CUDA)
   add_library(SVM SHARED ${PEGASOS_SHARED_HEADERS} ${PEGASOS_CPU_FILES})
+  target_link_libraries(${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 endif(WITH_CUDA)

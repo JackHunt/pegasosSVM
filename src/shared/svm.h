@@ -44,7 +44,8 @@ namespace pegasos {
 
     public:
 
-        SVM() : dataDimension(0), timeStep(1), eta(0.0){};
+        SVM() : dataDimension(0), timeStep(1), eta(0.0) {
+        };
         SVM(int D, T lambda);
         virtual void train(T *data, int *labels, int instances, int batchSize) = 0;
         virtual T predict(T *data) = 0;

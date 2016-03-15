@@ -45,10 +45,49 @@ inline int getIdx() {
  */
 template<typename T>
 __global__
-void dotToIndicator_kernel(T *dot, int *labels, int length) {
+void dotToIndicator_kernel(T *dot, int *labels, int length, T intercept) {
     int idx = getIdx();
-    if (idx < 0 || idx > length) return;
-    dot[idx] = (dot[idx] < (T) 1.0) ? (T) labels[idx] : (T) 0.0;
+    if (idx < 0 || idx > length-1) return;
+    dot[idx] = dotToIndicator(dot[idx], labels[idx], intercept);
+}
+
+/*
+ * Intercept reduction kernel. Sums Y-X*w.
+ * TO-DO: Replace this with full warp unrolling.
+ */
+template<typename T>
+__global__
+void interceptReduction_kernel(T *dot, int *labels, T *b, int batchSize){
+    __shared__ T partialSum[CUDA_BLOCK_DIM];
+    int thrIdx = threadIdx.x;
+    int globalIdx = getIdx();
+    if(globalIdx < 0 || globalIdx > batchSize-1) return;
+    
+    partialSum[thrIdx] = ((T)labels[globalIdx] - dot[globalIdx]);
+    __syncthreads();
+    
+    for(int i=1; i<blockDim.x; i *= 2){
+        if(thrIdx % (2*i) == 0){
+            partialSum[thrIdx] += partialSum[thrIdx + i];
+        }
+        __syncthreads();
+    }
+    
+    if(thrIdx == 0){
+        b[blockIdx.x] = partialSum[0];
+    }
+}
+
+/*
+ * Adds the intercept term to SVM outputs.
+ */
+template<typename T>
+__global__
+void addIntercept_kernel(T *outputs, T b, int length){
+    int idx = getIdx();
+    if (idx < 0 || idx > length-1) return;
+    
+    outputs[idx] += b;
 }
 
 /*
@@ -56,9 +95,9 @@ void dotToIndicator_kernel(T *dot, int *labels, int length) {
  */
 template<typename T>
 __global__
-void weightUpdate_kernel(T *weights, T *batchSum, T c1, T c2, int length){
+void weightUpdate_kernel(T *weights, T *batchSum, T c1, T c2, int length) {
     int idx = getIdx();
-    if (idx < 0 || idx > length) return;
+    if (idx < 0 || idx > length-1) return;
     weightUpdateIndividual(weights, batchSum, c1, c2, idx);
 }
 #endif
