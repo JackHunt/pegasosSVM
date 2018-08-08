@@ -37,20 +37,20 @@ endif(USE_OpenMP)
 
 #Add project sources
 set(PEGASOS_SHARED_HEADERS
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/shared/shared.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/shared/svm.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/shared/general.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/shared/training.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/shared/shared.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/shared/svm.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/shared/general.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/shared/training.hpp
 )
 
 set(PEGASOS_CPU_FILES
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/CPU/cpu_svm.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/CPU/cpu_svm.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/CPU/cpu_svm.cpp
 )
 
 set(PEGASOS_GPU_FILES
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/CUDA/gpu_svm.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/CUDA/gpu_svm_kernels.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/CUDA/gpu_svm.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/CUDA/gpu_svm_kernels.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/CUDA/gpu_svm.cu
 )
 

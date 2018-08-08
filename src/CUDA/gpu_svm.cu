@@ -25,7 +25,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "gpu_svm.h"
+#include "gpu_svm.hpp"
 
 using namespace pegasos;
 
@@ -39,7 +39,7 @@ using namespace pegasos;
  */
 template<typename T>
 gpuSVM<T>::gpuSVM(int D, T lambda) : dataDimension(D), lambda(lambda) {
-    CUDA_CHECK(cudaMalloc((void**) &this->weights, dataDimension * sizeof(T)));
+    CUDA_CHECK(cudaMalloc((void**)&this->weights, dataDimension * sizeof(T)));
     this->reset();
     CUBLAS_CHECK(cublasCreate_v2(&this->cublasHandle));
 }
@@ -54,7 +54,7 @@ gpuSVM<T>::~gpuSVM() {
 }
 
 /*
- * Perform a single iteration of GPU based Primal SVM training, 
+ * Perform a single iteration of GPU based Primal SVM training,
  * as per pegasos paper.
  * Column wise reductions achieved by matrix multiplications, for efficiency.
  * Currently, can only process a batch in contiguous memory.
@@ -64,27 +64,27 @@ void gpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
     if (batchSize != instances) {
         throw std::invalid_argument("batchSize != instances not yet implemented!");
     }
-    
+
     T *dot, *reduced;
-    CUDA_CHECK(cudaMalloc((void**) &dot, batchSize * sizeof (T)));
-    CUDA_CHECK(cudaMalloc((void**) &reduced, dataDimension * sizeof (T)));
-    
+    CUDA_CHECK(cudaMalloc((void**)&dot, batchSize * sizeof(T)));
+    CUDA_CHECK(cudaMalloc((void**)&reduced, dataDimension * sizeof(T)));
+
     cublasMatVecMult(CUBLAS_OP_T, batchSize, dataDimension, (T) 1.0, data, weights, (T) 0.0, dot);
-    int gridDimension = (int) ceil((float) batchSize / (float) CUDA_BLOCK_DIM);
-    dotToIndicator_kernel<<<gridDimension, CUDA_BLOCK_DIM>>>(dot, labels, batchSize, b);
-    
+    int gridDimension = (int)ceil((float)batchSize / (float)CUDA_BLOCK_DIM);
+    dotToIndicator_kernel << <gridDimension, CUDA_BLOCK_DIM >> > (dot, labels, batchSize, b);
+
     setIntercept(dot, labels, batchSize);
 
     cublasMatVecMult(CUBLAS_OP_N, batchSize, dataDimension, (T) 1.0, data, dot, (T) 0.0, reduced);
 
     T c1 = computeCoeff1<T>(eta, lambda);
     T c2 = computeCoeff2<T>(eta, batchSize);
-    gridDimension = (int) ceil((float) dataDimension / (float) CUDA_BLOCK_DIM);
-    weightUpdate_kernel<<<gridDimension, CUDA_BLOCK_DIM>>>(weights, reduced, c1, c2, dataDimension);
+    gridDimension = (int)ceil((float)dataDimension / (float)CUDA_BLOCK_DIM);
+    weightUpdate_kernel << <gridDimension, CUDA_BLOCK_DIM >> > (weights, reduced, c1, c2, dataDimension);
 
     eta = computeEta<T>(lambda, timeStep);
     timeStep++;
-    
+
     CUDA_CHECK(cudaFree(dot));
     CUDA_CHECK(cudaFree(reduced));
 }
@@ -96,9 +96,9 @@ template<typename T>
 T gpuSVM<T>::predict(T *data) {
     T weights_cpu[dataDimension];
     T data_cpu[dataDimension];
-    CUDA_CHECK(cudaMemcpy(weights_cpu, weights, dataDimension * sizeof (T), cudaMemcpyDeviceToHost));
-    CUDA_CHECK(cudaMemcpy(data_cpu, data, dataDimension * sizeof (T), cudaMemcpyDeviceToHost));
-    return innerProduct(weights_cpu, data_cpu, dataDimension) +  b;
+    CUDA_CHECK(cudaMemcpy(weights_cpu, weights, dataDimension * sizeof(T), cudaMemcpyDeviceToHost));
+    CUDA_CHECK(cudaMemcpy(data_cpu, data, dataDimension * sizeof(T), cudaMemcpyDeviceToHost));
+    return innerProduct(weights_cpu, data_cpu, dataDimension) + b;
 }
 
 /*
@@ -108,11 +108,11 @@ template<typename T>
 void gpuSVM<T>::predict(T* data, T* result, int instances) {
     cublasMatVecMult(CUBLAS_OP_T, instances, dataDimension, (T) 1.0, data, weights, (T) 0.0, result);
     int gridDimension = (int)ceil((float)instances / (float)CUDA_BLOCK_DIM);
-    addIntercept_kernel<<<gridDimension, CUDA_BLOCK_DIM>>>(result, b, instances);
-    
+    addIntercept_kernel << <gridDimension, CUDA_BLOCK_DIM >> > (result, b, instances);
+
     T tmp[instances];
-    cudaMemcpy(&tmp, result, instances*sizeof(T), cudaMemcpyDeviceToHost);
-    for(int i=0; i<instances; i++){
+    cudaMemcpy(&tmp, result, instances * sizeof(T), cudaMemcpyDeviceToHost);
+    for (int i = 0; i < instances; i++) {
         std::cout << tmp[i] << std::endl;
     }
 }
@@ -128,7 +128,7 @@ void gpuSVM<T>::reset() {
     srand(time(0));
     T tmp[dataDimension];
     for (int i = 0; i < dataDimension; i++) {
-        tmp[i] = (T) rand() / (T) RAND_MAX;
+        tmp[i] = (T)rand() / (T)RAND_MAX;
     }
     CUDA_CHECK(cudaMemcpy(this->weights, &tmp, dataDimension * sizeof(T), cudaMemcpyHostToDevice));
 }
@@ -139,7 +139,7 @@ void gpuSVM<T>::reset() {
 
 /*
  * CURRENTLY UNIMPLEMENTED.
- * Will generate random mini batches. Currently prohibited by performance 
+ * Will generate random mini batches. Currently prohibited by performance
  * limitations pertaining to uncoalesced read operations.
  */
 template<typename T>
@@ -151,10 +151,10 @@ thrust::device_vector<int> gpuSVM<T>::getBatch(int batchSize, int numElements) {
  * Update intercept term w.r.t the current data and weights.
  */
 template<typename T>
-void gpuSVM<T>::setIntercept(T *dot, int *labels, int batchSize){
-    int gridDimension = (int) ceil((float) batchSize / (float) CUDA_BLOCK_DIM);
+void gpuSVM<T>::setIntercept(T *dot, int *labels, int batchSize) {
+    int gridDimension = (int)ceil((float)batchSize / (float)CUDA_BLOCK_DIM);
     thrust::device_vector<T> partialSums(gridDimension, 0.0);
-    interceptReduction_kernel<<<gridDimension, CUDA_BLOCK_DIM>>>(dot, labels, thrust::raw_pointer_cast(partialSums.data()), batchSize);
+    interceptReduction_kernel << <gridDimension, CUDA_BLOCK_DIM >> > (dot, labels, thrust::raw_pointer_cast(partialSums.data()), batchSize);
     cudaDeviceSynchronize();
     b = thrust::reduce(partialSums.begin(), partialSums.end()) / batchSize;
 }
@@ -164,7 +164,7 @@ void gpuSVM<T>::setIntercept(T *dot, int *labels, int batchSize){
  */
 template<typename T>
 void gpuSVM<T>::cublasMatVecMult(cublasOperation_t transA, int M, int N, float alpha, float *A,
-        float *x, float beta, float *C) {
+                                 float *x, float beta, float *C) {
     CUBLAS_CHECK(cublasSgemv_v2(cublasHandle, transA, M, N, &alpha, A, M, x, 1, &beta, C, 1));
 }
 
@@ -173,7 +173,7 @@ void gpuSVM<T>::cublasMatVecMult(cublasOperation_t transA, int M, int N, float a
  */
 template<typename T>
 void gpuSVM<T>::cublasMatVecMult(cublasOperation_t transA, int M, int N, double alpha, double *A,
-        double *x, double beta, double *C) {
+                                 double *x, double beta, double *C) {
     CUBLAS_CHECK(cublasDgemv_v2(cublasHandle, transA, M, N, &alpha, A, N, x, 1, &beta, C, 1));
 }
 template class gpuSVM<float>;

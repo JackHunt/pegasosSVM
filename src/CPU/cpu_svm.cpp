@@ -25,7 +25,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "cpu_svm.h"
+#include "cpu_svm.hpp"
 
 using namespace pegasos;
 
@@ -62,19 +62,19 @@ void cpuSVM<T>::train(T *data, int *labels, int instances, int batchSize) {
     dot = new T[batchSize];
     reduced = new T[dataDimension];
     blasMatVecMult(CblasNoTrans, batchSize, dataDimension, (T) 1.0, data, weights, (T) 0.0, dot);
-    
+
     b = 0.0;
-    #if defined(_OPENMP)
-    #pragma omp parallel for
-    #endif
+#if defined(_OPENMP)
+#pragma omp parallel for
+#endif
     for (int i = 0; i < batchSize; i++) {
         b += (labels[i] - dot[i]);
     }
-    b /= (T) batchSize;
-    
-    #if defined(_OPENMP)
-    #pragma omp parallel for
-    #endif
+    b /= (T)batchSize;
+
+#if defined(_OPENMP)
+#pragma omp parallel for
+#endif
     for (int i = 0; i < batchSize; i++) {
         dot[i] = dotToIndicator(dot[i], labels[i], b);
     }
@@ -119,8 +119,8 @@ void cpuSVM<T>::reset() {
     this->timeStep = 1;
     this->eta = (T) 0.0;
     srand(time(0));
-    for (int i = 0; i<this->dataDimension; i++) {
-        this->weights[i] = (T) rand() / (T) RAND_MAX;
+    for (int i = 0; i < this->dataDimension; i++) {
+        this->weights[i] = (T)rand() / (T)RAND_MAX;
     }
     T norm = l2Norm(this->weights, this->dataDimension);
     //weightProjection(this->weights, this->lambda, norm, this->dataDimension);
@@ -143,7 +143,7 @@ std::vector<int> cpuSVM<T>::getBatch(int batchSize, int numElements) {
  */
 template<typename T>
 void cpuSVM<T>::blasMatVecMult(CBLAS_TRANSPOSE transA, int M, int N, float alpha, float *A,
-        float *x, float beta, float *C) {
+                               float *x, float beta, float *C) {
     cblas_sgemv(CblasRowMajor, transA, M, N, alpha, A, N, x, 1, beta, C, 1);
 }
 
@@ -152,7 +152,7 @@ void cpuSVM<T>::blasMatVecMult(CBLAS_TRANSPOSE transA, int M, int N, float alpha
  */
 template<typename T>
 void cpuSVM<T>::blasMatVecMult(CBLAS_TRANSPOSE transA, int M, int N, double alpha, double *A,
-        double *x, double beta, double *C) {
+                               double *x, double beta, double *C) {
     cblas_dgemv(CblasRowMajor, transA, M, N, alpha, A, N, x, 1, beta, C, 1);
 }
 
